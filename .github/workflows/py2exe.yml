@@ -10,13 +10,15 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download pyinstaller
-        run: pip install pyinstaller
+        run: pip install pyinstaller configparser
 
       - name: Build application
-        run: pyinstaller --onefile --distpath . patcher.py
+        run: |
+          pyinstaller --onefile --distpath . patcher-cfg.py
+          pyinstaller --onefile --distpath . patcher.py
 
       - name: Push app artifact
         uses: actions/upload-artifact@v2
         with:
           name: patcher
-          path: patcher.exe
+          path: "*.exe"
