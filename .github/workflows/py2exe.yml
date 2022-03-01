@@ -14,11 +14,25 @@ jobs:
 
       - name: Build application
         run: |
+          echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
           pyinstaller --onefile --distpath . patcher-cfg.py
           pyinstaller --onefile --distpath . patcher.py
 
-      - name: Push app artifact
+      - name: Push app artifact - cfg
         uses: actions/upload-artifact@v2
         with:
           name: patcher
-          path: "*.exe"
+          path: patcher-cfg.exe
+      - name: Push app artifact - cli
+        uses: actions/upload-artifact@v2
+        with:
+          name: patcher
+          path: patcher.exe
+
+      - name: Upload binaries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event_name != 'pull_request' == 'workflow_dispatch'
+        run: |
+          compress-archive patcher-cfg.exe, input.cfg bin.zip
+          gh release create $env:SHORT_SHA bin.zip --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"

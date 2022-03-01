@@ -15,12 +15,12 @@ def patchfile():
     path = sys.argv[1]
     offset = (int(offset_hex, 0))
     # todo pass this from cfg
-    ElfAddrCell = False
+    config.getboolean("patch", "ElfAddrCell")
     with open(path, 'r+b') as f:
         # normal path
         f.seek(offset, 0)
         # cell path
-        if ElfAddrCell == True:
+        if elfaddr == True:
             f.seek(offset-65536, 0)
         f.write(byte_array)
 
@@ -28,14 +28,18 @@ def patchfile():
 title = config['patch']['name']
 addr = config['patch']['addrr']
 patch = config['patch']['value']
+elfaddr = config.getboolean("patch", "ElfAddrCell")
 print(f'PatchTitle: {title}')
 print(f'Address:    {addr}')
 print(f'Patch:      {patch}')
+print(f'UsePS3Addr: {elfaddr}')
 patchfile()
-title = config['patch1']['name']
-addr = config['patch1']['addrr']
-patch = config['patch1']['value']
-print(f'PatchTitle: {title}')
-print(f'Address:    {addr}')
-print(f'Patch:      {patch}')
-patchfile()
+# title = config['patch1']['name']
+# addr = config['patch1']['addrr']
+# patch = config['patch1']['value']
+# elfaddr = config.getboolean("patch1", "ElfAddrCell")
+# print(f'PatchTitle: {title}')
+# print(f'Address:    {addr}')
+# print(f'Patch:      {patch}')
+# print(f'UsePS3Addr: {elfaddr}')
+# patchfile()
