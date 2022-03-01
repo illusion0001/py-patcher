@@ -1,0 +1,22 @@
+name: Build into exeutable
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download pyinstaller
+        run: pip install pyinstaller
+
+      - name: Build application
+        run: pyinstaller --onefile --distpath . patcher.py
+
+      - name: Push app artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: patcher
+          path: patcher.exe

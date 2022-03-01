@@ -1,0 +1,7 @@
+# Compiled
+*.exe
+*.spec
+
+# Packaging
+\build
+\__pycache__
