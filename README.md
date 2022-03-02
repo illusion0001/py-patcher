@@ -25,3 +25,9 @@ patcher.py [filepath] [cfgpath]
 # addrr = 0xCA7F00D
 # value = CA7F00D
 ```
+
+# Credits
+
+[aerosoul94](https://github.com/aerosoul94)
+
+Shadow
