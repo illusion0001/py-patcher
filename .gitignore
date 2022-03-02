@@ -1,7 +1,6 @@
-# Compiled
-*.exe
-*.spec
-
-# Packaging
-\build
-\__pycache__
+#ignore
+*.*
+#except
+!*.py
+!*.yml
+!*.md

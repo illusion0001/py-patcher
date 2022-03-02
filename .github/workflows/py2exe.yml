@@ -1,6 +1,15 @@
-name: Build into exeutable
+name: Build into packed windows exeutable
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths:
+      - '.github/workflows/py2exe.yml'
+      - '*.py'
+  pull_request:
+    paths:
+      - '.github/workflows/py2exe.yml'
+      - '*.py'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -9,6 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      # Todo: cache this
       - name: Download pyinstaller
         run: pip install pyinstaller configparser
 
@@ -19,24 +29,29 @@ jobs:
           pyinstaller --onefile --distpath . patcher.py
 
       - name: Push app artifact - cfg
+        if: github.event_name != 'workflow_dispatch' # skip
         uses: actions/upload-artifact@v2
         with:
-          name: patcher-cfg
+          name: bin-patcher-cfg
           path: |
+            input.cfg
             patcher-cfg.exe
             patcher-cfg.py
+
       - name: Push app artifact - cli
+        if: github.event_name != 'workflow_dispatch' # skip
         uses: actions/upload-artifact@v2
         with:
-          name: patcher
+          name: bin-patcher
           path: |
             patcher.exe
-            patcher-cfg.py
+            patcher.py
 
       - name: Upload binaries
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.event_name != 'pull_request' == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' # manually push the release
         run: |
-          compress-archive patcher-cfg.exe, input.cfg, patcher-cfg.py bin.zip
-          gh release create $env:SHORT_SHA bin.zip --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
+          compress-archive patcher-cfg.exe, input.cfg, patcher-cfg.py bin-patcher-cfg
+          gh release create $env:SHORT_SHA bin-patcher-cfg --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
+

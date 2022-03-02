@@ -2,6 +2,12 @@
 
 Simple Binary Patching in Python3
 
+# Features
+
+Unlimited byte array (CLI and CFG)
+
+Config like parsing support (CFG only)
+
 ## Usage
 
 CLI:
@@ -15,7 +21,7 @@ patcher.py [filepath] [offset] [byte_array] # i.e ca1f00d or "ca 1f 00 0d"
 CFG:
 
 ```bash
-patcher.py [filepath] [cfgpath]
+patcher-cfg.py [filepath] [cfgpath]
 # patcher.py 1.elf input.cfg
 # content of .cfg file
 
@@ -31,3 +37,9 @@ patcher.py [filepath] [cfgpath]
 [aerosoul94](https://github.com/aerosoul94)
 
 Shadow
+
+## Todo
+
+Input file in cfg
+
+Output file in cfg (save as)
