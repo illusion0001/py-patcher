@@ -1,6 +1,6 @@
 name: Build into exeutable
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -21,18 +21,22 @@ jobs:
       - name: Push app artifact - cfg
         uses: actions/upload-artifact@v2
         with:
-          name: patcher
-          path: patcher-cfg.exe
+          name: patcher-cfg
+          path: |
+            patcher-cfg.exe
+            patcher-cfg.py
       - name: Push app artifact - cli
         uses: actions/upload-artifact@v2
         with:
           name: patcher
-          path: patcher.exe
+          path: |
+            patcher.exe
+            patcher-cfg.py
 
       - name: Upload binaries
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.event_name != 'pull_request' == 'workflow_dispatch'
         run: |
-          compress-archive patcher-cfg.exe, input.cfg bin.zip
+          compress-archive patcher-cfg.exe, input.cfg, patcher-cfg.py bin.zip
           gh release create $env:SHORT_SHA bin.zip --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
