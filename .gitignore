@@ -1,6 +1,11 @@
-#ignore
+# ignore
 *.*
-#except
+
+# except
+!.github/workflows/*.yml
+!.gitkeep
+!testdata/*
 !*.py
 !*.yml
 !*.md
+!requirements.txt

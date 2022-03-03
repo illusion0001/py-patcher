@@ -4,9 +4,9 @@ Simple Binary Patching in Python3
 
 # Features
 
-Unlimited byte array (CLI and CFG)
+Unlimited byte array (CLI and yml)
 
-Config like parsing support (CFG only)
+Config like parsing support (yml only)
 
 ## Usage
 
@@ -18,28 +18,20 @@ patcher.py [filepath] [offset] [byte_array] # i.e ca1f00d or "ca 1f 00 0d"
 # patcher.py 1.elf 0xCD44 "60 00 00 00"
 ```
 
-CFG:
+yml: see syntax in [example.yml](example.yml)
 
 ```bash
-patcher-cfg.py [filepath] [cfgpath]
-# patcher.py 1.elf input.cfg
-# content of .cfg file
-
-# [patch]
-# ElfAddrCell=False
-# name = Dummy Patch Name
-# addrr = 0xCA7F00D
-# value = CA7F00D
+patcher-yml.py [filepath] [ymlpath]
 ```
 
 # Credits
 
+ShadowDog
+
 [aerosoul94](https://github.com/aerosoul94)
 
-Shadow
+## Todo-list
 
-## Todo
+Support big endian float
 
-Input file in cfg
-
-Output file in cfg (save as)
+Help message when no arguments are provided

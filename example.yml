@@ -1,0 +1,29 @@
+- game: "Game Title"
+  name: "Patch Title"
+  author: "skill"
+  note: "issues"
+  enabled: True
+  verbose: True # only need to be declared once
+  patch_list:
+    # - [ syntax ]
+    # - [ isCell, IsOrbis should never be on at the same time, there will be an assertion if that is the case ]
+    # - [ Cell Elf Base:  0x10000  ]
+    # - [ Orbis Elf Base: 0x400000 ]
+    # - [ Todo: add types and remove isPlatform ]
+    # - [ patch_type, ElfAddr, "HexByteArray", isCell, isOrbis ]
+      - [ direct, 0x40,    "60 00 00 00", False, False ]
+      - [ direct, 0x20004, "60000000", False, False ]
+    # - [ direct, 0x80,    "2526", True, True  ] # this hould never happen, will throw assertion
+      - [ direct, 0x20004, "12 34 56 78", True, False ]
+
+- game: "Game Title1"
+  name: "Patch Title1"
+  author: "having skill"
+  note: "issues"
+  enabled: False
+  verbose:
+  patch_list:
+      - [ direct, 0x40,    "60 00 00 00", False, False ]
+      - [ direct, 0x20004, "60000000", False, False ]
+    # - [ direct, 0x80,    "2526", True, True  ] # this hould never happen, will throw assertion
+      - [ direct, 0x20004, "4555", True, False ]

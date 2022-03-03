@@ -1,13 +1,13 @@
-name: Build into packed windows exeutable
+name: Build Windows Exeutable
 
 on:
   push:
     paths:
-      - '.github/workflows/py2exe.yml'
+      - '.github/workflows/'
       - '*.py'
   pull_request:
     paths:
-      - '.github/workflows/py2exe.yml'
+      - '.github/workflows/'
       - '*.py'
   workflow_dispatch:
 
@@ -18,25 +18,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Todo: cache this
-      - name: Download pyinstaller
-        run: pip install pyinstaller configparser
+      - name: Install dependencies
+        run:  pip install -r requirements.txt
 
       - name: Build application
         run: |
           echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
-          pyinstaller --onefile --distpath . patcher-cfg.py
+          pyinstaller --onefile --distpath . patcher-yml.py
           pyinstaller --onefile --distpath . patcher.py
 
-      - name: Push app artifact - cfg
+      - name: Run tests (.py)
+        run: |
+          echo ============================================
+          echo Running Tests
+          python patcher-yml.py  testdata/testdata.elf example.yml
+          echo ============================================
+
+      - name: Run tests (.exe)
+        run: |
+          echo ============================================
+          echo Running Tests
+          .\patcher-yml.exe testdata/testdata.elf example.yml
+          echo Tests Passed
+          echo ============================================
+
+      - name: Push app artifact - yml
         if: github.event_name != 'workflow_dispatch' # skip
         uses: actions/upload-artifact@v2
         with:
-          name: bin-patcher-cfg
+          name: bin-patcher-yml
           path: |
-            input.cfg
-            patcher-cfg.exe
-            patcher-cfg.py
+            example.yml
+            patcher-yml.exe
+            patcher-yml.py
 
       - name: Push app artifact - cli
         if: github.event_name != 'workflow_dispatch' # skip
@@ -52,6 +66,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.event_name == 'workflow_dispatch' # manually push the release
         run: |
-          compress-archive patcher-cfg.exe, input.cfg, patcher-cfg.py bin-patcher-cfg
-          gh release create $env:SHORT_SHA bin-patcher-cfg --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
+          compress-archive patcher-yml.exe, example.yml, patcher-yml.py bin-patcher-yml
+          gh release create $env:SHORT_SHA bin-patcher-yml --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
 
