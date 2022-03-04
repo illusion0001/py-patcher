@@ -2,28 +2,47 @@
   name: "Patch Title"
   author: "skill"
   note: "issues"
-  enabled: True
-  verbose: True # only need to be declared once
+  enabled: True # Todo: move this to a separate file
   patch_list:
-    # - [ syntax ]
-    # - [ isCell, IsOrbis should never be on at the same time, there will be an assertion if that is the case ]
-    # - [ Cell Elf Base:  0x10000  ]
-    # - [ Orbis Elf Base: 0x400000 ]
-    # - [ Todo: add types and remove isPlatform ]
-    # - [ patch_type, ElfAddr, "HexByteArray", isCell, isOrbis ]
-      - [ direct, 0x40,    "60 00 00 00", False, False ]
-      - [ direct, 0x20004, "60000000", False, False ]
-    # - [ direct, 0x80,    "2526", True, True  ] # this hould never happen, will throw assertion
-      - [ direct, 0x20004, "12 34 56 78", True, False ]
+      # - [ syntax ]
+      # - [ Cell  Elf Base: 0x10000  ]
+      # - [ Orbis Elf Base: 0x400000 ]
+      # - [ Todo: add types ]
+      # - [ patch_type, ElfAddr,  "HexByteArray" (orbis or direct only) ]
+      - [ orbis,      0x400000, "90 90 90 90" ] # spaces doesn't matter
+      # - [ orbis_utf8, 0x400004, "My utf8 string!" ]
+      # - [ orbis_f32,  0x400008, 0.5 ] # little endian
+      # - [ orbis_f64,  0x40000c, 0.5 ] # little endian
+      # - [ cell_utf8,  0x2008c,  "My utf8 string!" ]
+      # - [ direct,     0x20040,  "60 00 00 00" ]
+      # - [ direct_f32, 0x20040,  0.5 ]
+      # - [ direct_f64, 0x20044,  0.5 ]
+      # - [ cell_b32,   0x20080,  0x60000000 ] 
+      # - [ cell_b16,   0x20084,  0xF00D ]
+      # - [ cell_byte,  0x20088,  0x1 ]
+      # - [ cell_f32,   0x2008c,  0.5 ] # must be byte swapped to big endian
+      # - [ cell_f64,   0x20090,  0.5 ]
+        # f32 = float
+        # f64 = double precision float
 
 - game: "Game Title1"
   name: "Patch Title1"
   author: "having skill"
   note: "issues"
   enabled: False
-  verbose:
   patch_list:
-      - [ direct, 0x40,    "60 00 00 00", False, False ]
-      - [ direct, 0x20004, "60000000", False, False ]
-    # - [ direct, 0x80,    "2526", True, True  ] # this hould never happen, will throw assertion
-      - [ direct, 0x20004, "4555", True, False ]
+      - [ orbis,      0x400000, "90 90 90 90" ] # spaces doesn't matter
+      # - [ orbis_utf8, 0x400004, "My utf8 string!" ]
+      # - [ orbis_f32,  0x400008, 0.5 ] # little endian
+      # - [ orbis_f64,  0x40000c, 0.5 ] # little endian
+      # - [ cell_utf8,  0x2008c,  "My utf8 string!" ]
+      # - [ direct,     0x20040,  "60 00 00 00" ]
+      # - [ direct_f32, 0x20040,  0.5 ]
+      # - [ direct_f64, 0x20044,  0.5 ]
+      # - [ cell_b32,   0x20080,  0x60000000 ] 
+      # - [ cell_b16,   0x20084,  0xF00D ]
+      # - [ cell_byte,  0x20088,  0x1 ]
+      # - [ cell_f32,   0x2008c,  0.5 ] # must be byte swapped to big endian
+      # - [ cell_f64,   0x20090,  0.5 ]
+        # f32 = float
+        # f64 = double precision float

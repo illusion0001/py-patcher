@@ -1,0 +1,69 @@
+name: Build and test PyPatcher
+
+on:
+  push:
+    paths:
+      - '.github/workflows/*'
+      - '*.py'
+  pull_request:
+    paths:
+      - '.github/workflows/*'
+      - '*.py'
+  workflow_dispatch:
+
+jobs:
+    tests:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            - name: Install dependencies
+              run:  pip install -r requirements.txt
+
+            - name: Build application
+              if: matrix.os == 'windows-latest'
+              run: |
+                echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
+                pyinstaller --onefile --distpath . patcher-yml.py
+                pyinstaller --onefile --distpath . patcher.py
+
+            - name: Run tests (.py)
+              run: |
+                echo ============================================
+                echo Running Tests
+                python patcher-yml.py -f testdata/testdata.elf -c example.yml -v -od
+                echo ============================================
+
+            - name: Run tests (.exe)
+              if: matrix.os == 'windows-latest'
+              run: |
+                echo ============================================
+                echo Running Tests
+                .\patcher-yml.exe -f testdata/testdata.elf -c example.yml -v -od
+                echo ============================================
+
+            - name: Push app artifact - yml
+              if: |
+                matrix.os == 'windows-latest' &&
+                github.ref == 'refs/heads/main'
+              uses: actions/upload-artifact@v2
+              with:
+                name: bin-patcher-yml
+                path: |
+                  example.yml
+                  patcher-yml.exe
+
+            - name: Upload binaries
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              if: |
+                github.event_name == 'workflow_dispatch' &&
+                matrix.os == 'windows-latest'
+              run: |
+                compress-archive patcher-yml.exe, example.yml bin-patcher-yml.zip
+                gh release create $env:SHORT_SHA bin-patcher-yml.zip --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
