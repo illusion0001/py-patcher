@@ -1,11 +1,13 @@
 # ignore
 *.*
+*.exe
 
 # except
 !.github/workflows/*.yml
 !.gitkeep
-!testdata/*
-!*.py
+!src/*.py
+!archtype/*.py
+!data/**
 !*.yml
 !*.md
 !requirements.txt

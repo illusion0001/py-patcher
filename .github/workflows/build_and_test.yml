@@ -4,11 +4,13 @@ on:
   push:
     paths:
       - '.github/workflows/*'
-      - '*.py'
+      - 'src/*'
+      - 'src/*.py'
   pull_request:
     paths:
       - '.github/workflows/*'
-      - '*.py'
+      - 'src/*'
+      - 'src/*.py'
   workflow_dispatch:
 
 jobs:
@@ -29,14 +31,18 @@ jobs:
               if: matrix.os == 'windows-latest'
               run: |
                 echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
-                pyinstaller --onefile --distpath . patcher-yml.py
-                pyinstaller --onefile --distpath . patcher.py
+                pyinstaller --onefile --distpath . src/main.py
+
+            - name: Copy files to root for artifacts
+              run: |
+                cp src/main.py .
+                cp data/example.yml .
 
             - name: Run tests (.py)
               run: |
                 echo ============================================
                 echo Running Tests
-                python patcher-yml.py -f testdata/testdata.elf -c example.yml -v -od
+                python main.py -f data/testdata/testdata.elf -c example.yml -v -od
                 echo ============================================
 
             - name: Run tests (.exe)
@@ -44,7 +50,9 @@ jobs:
               run: |
                 echo ============================================
                 echo Running Tests
-                .\patcher-yml.exe -f testdata/testdata.elf -c example.yml -v -od
+                # todo, make py-patcher link with main
+                rename-item .\main.exe .\py-patcher.exe
+                .\py-patcher.exe -f data/testdata/testdata.elf -c example.yml -v -od
                 echo ============================================
 
             - name: Push app artifact - yml
