@@ -5,6 +5,7 @@
 # except
 !.github/workflows/*.yml
 !.gitkeep
+!*.py
 !src/*.py
 !archtype/*.py
 !data/**

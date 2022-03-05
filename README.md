@@ -2,44 +2,34 @@
 
 Simple Binary Patching in Python3
 
+[![Build and test PyPatcher](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml)
+
 # Features
 
-Unlimited byte array (CLI and yml)
-
-Config like parsing support (yml only)
+- Unlimited byte array (CLI and yml)
+- Config like parsing support (yml only)
 
 ## Usage
 
-CLI:
+yml: see syntax in [example.yml](data/example.yml)
 
 ```
-patcher.py [filepath] [offset] [byte_array] # i.e ca1f00d or "ca 1f 00 0d"
-# patcher.py 1.elf 0xCD40 "60000000"
-# patcher.py 1.elf 0xCD44 "60 00 00 00"
-```
-
-yml: see syntax in [example.yml](example.yml)
-
-```
-patcher-yml -h
-usage: patcher-yml.py [-h] -f FILE -c CONFIG
-example: patcher-yml.py -f example.elf -c example.yml
-
+launcher.py -h
+usage: launcher.py [-h] -f FILE -c CONFIG [-v] [-od] [-ci]
 options:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  The ELF file we need to patch.
+  -f FILE, --file FILE  The ELF file to be patched.
   -c CONFIG, --config CONFIG
                         The configuration file.
+  -v, --verbose         Enable Verbose Mode.
+  -od, --outputdate     Append date and time to output directory.
+  -ci, --cibuild        For running tests on buildbot
 ```
 
 # Credits
-
-ShadowDog
-
-[aerosoul94](https://github.com/aerosoul94)
+- ShadowDog
+- [aerosoul94](https://github.com/aerosoul94)
 
 ## Todo-list
 
-Add valid executable checks
-
-Support big endian float
+- [ ] Add array of bytes support (find and replace)

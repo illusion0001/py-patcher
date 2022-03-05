@@ -1,146 +1,142 @@
-import argparse
-import base64
 import os
 import coloredlogs
 import shutil
-import logging
+import logging as logs
 import yaml
 from datetime import datetime
 
-def patchfile(type, offset_pre, hexadecimal_string, out, count):
-    byte_array = bytearray.fromhex(hexadecimal_string)
-    path = out
-    offset_post = offset_pre  # need to be declared before use
-    logs.debug('\nPatch type: {}'.format(type))
-    with open(path, 'r+b') as f:
-        # normal path
-        f.seek(offset_post, 0)
-        # if iscell == True and isorbis == True:
-        #     logs.error("\n"
-        #                "==============================================================\n"
-        #                "ERROR: Cannot use two architecture at the same time, aborting!\n"
-        #                "==============================================================")
-        #     os.abort()
-        # # cell path, scrap this?
-        # if iscell == True:
-        #     offset_post = offset_pre - 0x10000
-        #     f.seek(offset_post, 0)
-        # # orbis path, scrap this?
-        # elif isorbis == True:
-        #     offset_post = offset_pre - 0x3FC000 # disabled aslr addr - file addr
-        #     f.seek(offset_post, 0)
-        f.write(byte_array)
+from src.archtype.archtypes import Cell, Generic, Orbis
+
+# Easily load different architectures
+arch_dic = {
+    "CELL": Cell,
+    "GENERIC": Generic, # for direct and array of bytes 
+                        # (AOB pattern find and replace)
+    "ORBIS": Orbis
+}
+
+def patchfile(offset, value, out, count):
+    # Open and patch the output file
+    with open(out, 'r+b') as f:
+        logs.debug('\nfile offset: {}'
+                   '\ninput: {}'.format(hex(offset), value))
+        f.seek(offset, 0)
+        f.write(value)
         logs.info(
             "\nApplied Patch Line {} in file: {}".format(count, out))
 
-def loadConfig(elf_file, conf_file, verbose, outdate):
+def headercheck(archs, elf):
+
+    header = open(elf,"rb")
+    cell_valid_header   = b'\x7F\x45\x4C\x46\x02\x02\x01\x66'
+    orbis_valid_header1 = b'\x7F\x45\x4C\x46\x02\x01\x01\x09'
+    orbis_valid_header2 = b'\x2F\x6C\x69\x62\x65\x78\x65\x63\x2F\x6C\x64\x2D\x65\x6C\x66\x2E\x73\x6F\x2E\x31'
+
+    if archs == 'cell':
+        elf_header = header.read(8)
+        if elf_header == cell_valid_header:
+            logs.debug("\n"
+                       "========================\n"
+                       "Valid Elf\n"
+                       "========================\n")
+        else:
+            logs.error("\n"
+                       "========================\n"
+                       "File {} is invalid! Make sure it is decrypted.\n"
+                       "========================\n".format(elf))
+            os.abort()
+
+    if archs == 'orbis':
+        elf_header1_result = header.read(0x8) # save
+        header.seek(0x4000, 0)
+        elf_header2_result = header.read(0x14) # save
+        if elf_header1_result == orbis_valid_header1 and orbis_valid_header2 == elf_header2_result:
+            logs.debug("\n"
+                       "========================\n"
+                       "Valid Elf\n"
+                       "========================\n")
+        else:
+            logs.error("\n"
+                       "========================\n"
+                       "File {} is invalid! Make sure it is a valid dump from AppDumper and Retail, not Fake Packaged Titles.\n"
+                       "========================\n".format(elf))
+            os.abort()
+    header.close()
+
+def loadConfig(elf_file, conf_file, verbose, outdate, ci):
+    if ci == True:
+        logs.debug('\nRunning in Buildbot Mode.')
+    else:
+        logs.debug('\nRunning in User Mode.')
+    # Checking desired verbosity level
+    if verbose == True:
+        coloredlogs.set_level(logs.DEBUG)
+    # Open the config file
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
-        input = elf_file
         if outdate == True:
-          out = os.path.join(os.getcwd(), datetime.now().strftime(
-              '{0}-%Y-%m-%d-%H-%M-%S/{0}'.format(os.path.basename(input))))
-        out = os.path.join(os.getcwd(), ('{0}-patched/{0}'.format(os.path.basename(input))))
+            out = os.path.join(os.getcwd(), datetime.now().strftime(
+                '{0}-%Y-%m-%d-%H-%M-%S/{0}'.format(os.path.basename(elf_file))))
+        else:
+            out = os.path.join(os.getcwd(), ('{0}-patched/{0}'.format(os.path.basename(elf_file))))
+        # Clone the file
         logs.info('\nSaving file to: {}'.format(out))
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        shutil.copyfile(input, out)
+        shutil.copyfile(elf_file, out)
         for i in range(0, len(read_data)):
-            # Checking desired verbosity level
-            if verbose == True:
-                coloredlogs.set_level(logging.DEBUG)
             # Print Metadata
             logs.info("\n"
-                    "=====================\n"
-                    "= Game Title    : {}\n"
-                    "= Patch Name    : {}\n"
-                    "= Patch Author  : {}\n"
-                    "= Patch Note    : {}\n"
-                    "= Patch Enabled : {}\n"
-                    "====================="
+                      "=====================\n"
+                      "= Game Title    : {}\n"
+                      "= Game Version  : {}\n"
+                      "= Patch Version : {}\n"
+                      "= Patch Name    : {}\n"
+                      "= Patch Author  : {}\n"
+                      "= Patch Note    : {}\n"
+                      "= Patch Enabled : {}\n"
+                      "= Architecture  : {}\n"
+                      "====================="
                 .format(
                 read_data[i]['game'],
+                read_data[i]['app_ver'],
+                read_data[i]['patch_ver'],
                 read_data[i]['name'],
                 read_data[i]['author'],
                 read_data[i]['note'],
-                read_data[i]['enabled']))
+                read_data[i]['enabled'],
+                read_data[i]['arch']))
             count = 0
-
             if read_data[i]['enabled'] == False:
                 logs.warning('\nPatch: "{}" for "{}" is disabled and will be skipped.'
                     .format(
                     read_data[i]['name'],
                     read_data[i]['game'], ))
             else:
-                for patch_data in read_data[i]['patch_list']:
-                    count += 1
-                    logs.info("\nApplying patch: {}".format(count))
-                    logs.debug("\n"
-                            "====================\n"
-                            "= Patch Type    : {}\n"
-                            "= Offset (Real) : {}\n"
-                            "= Value         : {}\n"
-                            "= OutFile       : {}\n"
-                            "= Line          : {}\n"
-                            "====================".format(patch_data[0], hex(patch_data[1]), patch_data[2],
-                                                            out, count))
-                    patchfile(patch_data[0], patch_data[1], patch_data[2], out, count)
+                ## Load the architecture according to the config
+                if read_data[i]['arch'].upper() in arch_dic.keys():
+                    architecture = arch_dic.get(read_data[i]['arch'].upper())()
+                    if ci == False:
+                        headercheck(read_data[i]['arch'], elf_file)
+                    else:
+                    # Reading patch list
+                        for patch_data in read_data[i]['patch_list']:
+                            count += 1
+                            logs.info("\nApplying patch: {}".format(count))
+                            logs.debug("\n"
+                                    "====================\n"
+                                    "= Patch Type    : {}\n"
+                                    "= Offset (Real) : {}\n"
+                                    "= Value         : {}\n"
+                                    "= OutFile       : {}\n"
+                                    "= Line          : {}\n"
+                                    "===================="
+                                    .format(patch_data[0],
+                                            hex(patch_data[1]),
+                                            patch_data[2],
+                                            out, count))
 
-if __name__ == "__main__":
-    # Basic Logs Config
-    logging.basicConfig()
-    logs = logging.getLogger(__name__)
-    coloredlogs.install(level=logging.INFO, logger=logs)
-    # Basic CLI config
-    parser = argparse.ArgumentParser(
-        prog="patcher-yml.py",
-        description=base64.b64decode(
-            "ICAgLi0tLS0tLS0tLS0tLS0uICAgICAgIC4gICAgLiAgICogICAgICAgKgogIC9"
-            "fL18vXy9fL18vXy9fLyBcICAgICAgICAgKiAgICAgICAuICAgKSAgICAuCiAvL18"
-            "vXy9fL18vXy9fLy8gXyBcIF9fICAgICAgICAgIC4gICAgICAgIC4KL18vXy9fL1"
-            "8vXy9fL18vfC8gXC4nIC5gLW8KIHwgICAgICAgICAgICAgfHwtJygvICwtLScKIH"
-            "wgICAgICAgICAgICAgfHwgIF8gfAogfCAgICAgICAgICAgICB8fCcnIHx8ICAgI"
-            "CAgICAgICBNYWRlIGJ5OgogfF9fX19fX19fX19fX198fCB8X3xMICAgICAgICAgI"
-            "CBpbGx1c2lvbgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFNoYWRv"
-            "d0RvZwogICAgICAgICAgICAgICAgICAgICBBdmF0YXI6IENsb3VkIFN0cmlmZQog"
-            "ICAgICAgICAgICgoKCUjIyUoLygoKCgoIyUlICAgICAgICAgICAgICAgICAKICA"
-            "gICAgICAgICAlKCgvIy8lJSMvKCUoIygmJSUlJSAgICAgICAgICAgICAgCiAgICA"
-            "gICAgICAgIC8vKCUmJSMlLyUvJSUmQEBAQEAmJiAgICAgICAgICAgIAogICAgIC"
-            "AgICAoKC8qLyMlIyUlJiMvLy8vJiZAQCYmJiUmLiAgICAgICAgICAKICAgICAgIC"
-            "AgIC4vLyMlIy8jJSojLy8oIyglJiYmJiYmJiYmICAgICAgICAgCiAgICAgICAgI"
-            "C8jIyovKCglIyUjIygvIyUmJSZAJiUlJiYmJiYgICAgICAgIAogICAgICAgLyUvL"
-            "yovKCMjIyglJSUmJiUvKCYmJUAmJiYmJiAgICAgICAgICAKICAgICAgICAvLyoo"
-            "LyUqKioqJSMlKC8uLi8sKiUmJiUlIyYgICAgICAgICAgCiAgICAgICAoIC8gKigo"
-            "KioqKiovQCYmJSUmQCMlKCUmLyAgICAgICAgICAgIAogICAgICAoICAgICAoKC8"
-            "vLy8qLyYmJiYmJiYmJSUmJiMsICAgICAgICAgICAKICAgICAgICAgICAgICggLiw"
-            "vLyovJiYmJiYmJiMmIy4uLCAgICAgICAgICAgCiAgICAgICAgICAgICAvICAgKi"
-            "oqKi8jJiYmJiMuJi4uLi4sICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgIC"
-            "4vIyYmLi4uLi8uLiAuLi4uLi4gICAgLCAKICAgICAgICAgICAgICAsIC4gICAgI"
-            "CAuICAgLiAgICAgLiAgLiwsLiAuLi4uCiAgICAgICAgICAqKiogICAgICAgICAgI"
-            "CAgICAgICAgICosLC4uLi4uLi4uLgogICAgICAgICAqKiouICAgICAgICAgICAg"
-            "ICAgICAgKi4uLi4uLi4uLi4uLiwKICAgICAgICAqKiAuICAgICAgICAgICAgICAg"
-            "Li4uICAuLi4qLi4uLi4uLCwsCiAgICAgICAgKiAuICAgICAgICAgICAgICAgIC4"
-            "uLiAgLi4sIC8uLi4uLi4uLAo=").decode('utf-8')
-        , formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser.add_argument('-f',
-                        '--file',
-                        required=True,
-                        help='The ELF file to be patched.')
-    parser.add_argument('-c',
-                        '--config',
-                        required=True,
-                        help='The configuration file.')
-    parser.add_argument('-v',
-                        '--verbose',
-                        required=False,
-                        action="store_true",
-                        help='Enable Verbose Mode.')
-    parser.add_argument('-od',
-                        '--outputdate',
-                        required=False,
-                        action="store_true",
-                        help='Append date and time to output directory.')
-    args = parser.parse_args()
-
-    # Load the config file, and patch the ELF file
-    loadConfig(args.file, args.config, args.verbose, args.outputdate)
+                            # Process the patch according to it's architecture
+                            final_data = architecture.convertData(patch_data[0], patch_data[1], patch_data[2])
+                            patchfile(final_data.get('offset'), final_data.get('value'), out, count)
+                else:
+                    logs.error("\n{} is not a supported Architecture.".format(read_data[i]['arch']))
