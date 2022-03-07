@@ -76,7 +76,17 @@ jobs:
                   example.yml
                   launcher.exe
                 if-no-files-found: error
-                if: github.ref == 'refs/heads/test'
+
+            - name: Push app artifact - yml
+              if: github.ref == 'refs/heads/test'
+              uses: actions/upload-artifact@v2
+              with:
+                name: patch-launcher
+                path: |
+                  README.md
+                  example.yml
+                  launcher.exe
+                if-no-files-found: error
                 retention-days: 2
 
             - name: Upload binaries

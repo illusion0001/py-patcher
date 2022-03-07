@@ -38,12 +38,12 @@ def headercheck(archs, elf):
             logs.debug("\n"
                        "========================\n"
                        "Valid Elf\n"
-                       "========================\n")
+                       "========================")
         else:
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is decrypted.\n"
-                       "========================\n".format(elf))
+                       "========================".format(elf))
             os.abort()
 
     if archs == 'orbis':
@@ -54,23 +54,23 @@ def headercheck(archs, elf):
             logs.debug("\n"
                        "========================\n"
                        "Valid Elf\n"
-                       "========================\n")
+                       "========================")
         else:
             logs.error("\n"
                        "========================\n"
-                       "File {} is invalid! Make sure it is a valid dump from AppDumper and Retail, not Fake Packaged Titles.\n"
-                       "========================\n".format(elf))
+                       "File {} is invalid! Make sure it is a valid dump from AppDumper and Retail Disc/Digital, not Fake Packaged Titles.\n"
+                       "========================".format(elf))
             os.abort()
     header.close()
 
 def loadConfig(elf_file, conf_file, verbose, outdate, ci):
+    # Checking desired verbosity level
+    if verbose == True:
+        coloredlogs.set_level(logs.DEBUG)
     if ci == True:
         logs.debug('\nRunning in Buildbot Mode.')
     else:
         logs.debug('\nRunning in User Mode.')
-    # Checking desired verbosity level
-    if verbose == True:
-        coloredlogs.set_level(logs.DEBUG)
     # Open the config file
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
