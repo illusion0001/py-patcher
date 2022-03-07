@@ -1,6 +1,5 @@
 import struct
 
-
 class types:
 
     def __init__(self, endian):
@@ -45,7 +44,8 @@ class types:
     def utf8(self, value):
         return value.encode('utf-8')
 
-    def __float_to_hex(self, f):  # https://stackoverflow.com/questions/23624212/how-to-convert-a-float-into-hex
+    # https://stackoverflow.com/questions/23624212/how-to-convert-a-float-into-hex
+    def __float_to_hex(self, f):
         return (struct.unpack('<I', struct.pack('<f', f))[0])
 
     def __double_to_hex(self, f):

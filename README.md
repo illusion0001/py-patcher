@@ -1,17 +1,18 @@
 # py-patcher
 
-Simple Binary Patching in Python3
+Simple Binary Patching for console games in Python.
 
 [![Build and test PyPatcher](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml)
 
 # Features
 
-- Unlimited byte array (CLI and yml)
-- Config like parsing support (yml only)
+- Config like parsing support.
+- Supports big and little endian architecture. (PS3 and PS4)
+- Easy to read syntaxes.
 
 ## Usage
 
-yml: see syntax in [example.yml](data/example.yml)
+See syntax in [example.yml](data/example.yml)
 
 ```
 launcher.py -h
@@ -23,7 +24,7 @@ options:
                         The configuration file.
   -v, --verbose         Enable Verbose Mode.
   -od, --outputdate     Append date and time to output directory.
-  -ci, --cibuild        For running tests on buildbot
+  -ci, --cibuild        For running tests on buildbot.
 ```
 
 # Credits
@@ -33,3 +34,4 @@ options:
 ## Todo-list
 
 - [ ] Add array of bytes support (find and replace)
+- [ ] Move Patch Enabled field to auto generated file

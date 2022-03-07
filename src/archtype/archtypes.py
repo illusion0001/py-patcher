@@ -20,7 +20,18 @@ class Generic:
     def convertData(self, var_type, offset, value):
         return {
             'offset': offset,  # - self.baseAddr
-            'value': types(self.endian).convert(value, var_type)  # self.types[var_type]().convert(value)
+            'value': types(self.endian).convert(value, var_type)
+        }
+
+class GenericOrbis:
+
+    def __init__(self):
+        self.endian = 'little'
+
+    def convertData(self, var_type, offset, value):
+        return {
+            'offset': offset,  # - self.baseAddr
+            'value': types(self.endian).convert(value, var_type)
         }
 
 class Orbis:

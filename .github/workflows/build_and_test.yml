@@ -44,14 +44,16 @@ jobs:
 
             - name: Copy files to root for artifacts
               run: |
-                cp data/example.yml .
+                cp data/*.yml .
 
             - name: Run tests (.py)
               run: |
                 echo ============================================
                 echo Running Tests
-                python launcher.py -f data/testdata/testdata.elf -c example.yml -v -ci -od
-                python launcher.py -f data/testdata/testdata.elf -c example.yml -v -ci
+                python launcher.py -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
+                python launcher.py -f data/testdata/fakeorbis.elf -c orbistest.yml -v
+                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v -od
+                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v
                 echo ============================================
 
             - name: Run tests (.exe)
@@ -59,9 +61,10 @@ jobs:
               run: |
                 echo ============================================
                 echo Running Tests
-                .\launcher.exe -f data/testdata/testdata.elf -c example.yml -v -ci -od
-                .\launcher.exe -f data/testdata/testdata.elf -c example.yml -v -ci
-                Format-Hex testdata.elf-patched/testdata.elf
+                .\launcher.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
+                .\launcher.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v
+                .\launcher.exe -f data/testdata/fakecell.elf -c celltest.yml -v -od
+                .\launcher.exe -f data/testdata/fakecell.elf -c celltest.yml -v
                 echo ============================================
 
             - name: Push app artifact - yml

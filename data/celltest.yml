@@ -1,0 +1,18 @@
+- game: "Game Title1"
+  app_ver: "01.00"
+  patch_ver: "1.0"
+  name: "Patch Title1"
+  author: "having skill"
+  note: "issues"
+  enabled: True # Todo: move this to a separate file
+  arch: cell
+  patch_list:
+       - [ utf8,  0x10000,  "My utf8 string!" ]
+       - [ bytes32,   0x20080,  0x60000000 ]
+       - [ bytes64,   0x20080,  0x6000000060000000 ]
+       - [ bytes16,   0x20084,  0xF00D ]
+       - [ byte,    0x20088,  0xFF ]
+       - [ float32,   0x1002c,  0.5 ] # must be byte swapped to big endian
+       - [ float64,   0x20090,  0.5 ]
+        # f32 = float
+        # f64 = double precision float
