@@ -14,10 +14,10 @@
       # - [ patch_type, ElfAddr, "HexByteArray" (orbis or generic only) ]
        - [ bytes, 0x40000c, "90 c3 be 00" ] # spaces doesn't matter
        - [ utf8, 0x400004, "My utf8 string!" ]
-       - [ lef32, 0x400018, 0.0333333333 ] # little endian
-       - [ lef64, 0x400020, 0.5 ] # little endian
-       - [ le32, 0x400080,  0x60000000 ]
-       - [ le64, 0x400084,  0x6000000060000000 ]
+       - [ float32, 0x400018, 0.0333333333 ] # little endian
+       - [ float64, 0x400020, 0.5 ] # little endian
+       - [ bytes32, 0x400080,  0x60000000 ]
+       - [ bytes64, 0x400084,  0x6000000060000000 ]
         # f32 = float
         # f64 = double precision float
 
@@ -31,12 +31,12 @@
   arch: cell
   patch_list:
        - [ utf8,  0x10000,  "My utf8 string!" ]
-       - [ be32,   0x20080,  0x60000000 ]
-       - [ be64,   0x20080,  0x6000000060000000 ]
-       - [ be16,   0x20084,  0xF00D ]
+       - [ bytes32,   0x20080,  0x60000000 ]
+       - [ bytes64,   0x20080,  0x6000000060000000 ]
+       - [ bytes16,   0x20084,  0xF00D ]
        - [ byte,    0x20088,  0xFF ]
-       - [ bef32,   0x1002c,  0.5 ] # must be byte swapped to big endian
-       - [ bef64,   0x20090,  0.5 ]
+       - [ float32,   0x1002c,  0.5 ] # must be byte swapped to big endian
+       - [ float64,   0x20090,  0.5 ]
         # f32 = float
         # f64 = double precision float
 
@@ -50,7 +50,7 @@
   arch: generic
   patch_list:
        - [ bytes, 0x20040,  "60 00 55 00" ]
-       - [ lef32, 0x20044,  0.5 ]
-       - [ lef64, 0x20048,  0.5 ]
+       - [ float32, 0x20044,  0.5 ]
+       - [ float64, 0x20048,  0.5 ]
        - [ utf8, 0x20050, "testing out the generic type text" ]
        #- [ aob, "7265706c616365206d6531, "7265706c616365206d6532" ]
