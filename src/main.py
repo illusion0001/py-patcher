@@ -42,6 +42,7 @@ def headercheck(archs, elf):
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is decrypted.\n"
+                       "No changes will be made to the patched file.\n"
                        "========================".format(elf))
             os.abort()
     if archs == 'orbis' or archs == 'generic_orbis' :
@@ -57,6 +58,7 @@ def headercheck(archs, elf):
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is a valid dump from AppDumper and Retail Disc/Digital, not Fake Packaged Titles.\n"
+                       "No changes will be made to the patched file.\n"
                        "========================".format(elf))
             os.abort()
     header.close()
@@ -77,11 +79,12 @@ def loadConfig(elf_file, conf_file, verbose, outdate, ci):
     # Checking desired verbosity level
     if verbose:
         coloredlogs.set_level(logs.DEBUG)
-
+        # Clone the original file before doing anything else
+        # Todo: clone file after headercheck()
+        out = cloneFile(elf_file, outdate)
     # Open the config file
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
-
         for i in range(0, len(read_data)):
             # Run headercheck() depending on run mode
             if ci:
@@ -105,8 +108,6 @@ def loadConfig(elf_file, conf_file, verbose, outdate, ci):
                 .format(
                 read_data[i]['game'], read_data[i]['app_ver'], read_data[i]['patch_ver'], read_data[i]['name'],
                 read_data[i]['author'], read_data[i]['note'], read_data[i]['enabled'], read_data[i]['arch']))
-            # Clone the ELF file
-            out = cloneFile(elf_file, outdate)
             count = 0
             if read_data[i]['enabled'] == False:
 
