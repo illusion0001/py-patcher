@@ -14,15 +14,15 @@ on:
   workflow_dispatch:
 
 jobs:
-    tests:
+    build_and_test:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [ ubuntu-latest, windows-latest ]
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Setup Python
               uses: actions/setup-python@v2
@@ -32,7 +32,7 @@ jobs:
             - name: Install dependencies
               run:  pip install -r requirements.txt
 
-            - name: Build application
+            - name: Build application (win32)
               if: matrix.os == 'windows-latest'
               env:
                 my_key: ${{ secrets.tests }}
@@ -40,7 +40,17 @@ jobs:
                 echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
                 pip install tinyaes
                 pip install https://github.com/pyinstaller/pyinstaller/archive/refs/heads/develop.zip
-                pyinstaller --onefile --key "$env:my_key" --distpath . launcher.py
+                pyinstaller --onefile --key "$env:my_key" -n py-patch --distpath . launcher.py
+
+            - name: Build application (linux)
+              if: matrix.os == 'ubuntu-latest'
+              env:
+                my_key: ${{ secrets.tests }}
+              run: |
+                echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+                pip install tinyaes
+                pip install https://github.com/pyinstaller/pyinstaller/archive/refs/heads/develop.zip
+                pyinstaller --onefile --key "$my_key" -n py-patch --distpath . launcher.py
 
             - name: Copy files to root for artifacts
               run: |
@@ -61,43 +71,67 @@ jobs:
               run: |
                 echo ============================================
                 echo Running Tests
-                .\launcher.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
-                .\launcher.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v
-                .\launcher.exe -f data/testdata/fakecell.elf -c celltest.yml -v -od
-                .\launcher.exe -f data/testdata/fakecell.elf -c celltest.yml -v
+                .\py-patch.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
+                .\py-patch.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v
+                .\py-patch.exe -f data/testdata/fakecell.elf -c celltest.yml -v -od
+                .\py-patch.exe -f data/testdata/fakecell.elf -c celltest.yml -v
                 echo ============================================
 
-            - name: Push app artifact - yml
+            - name: Run tests (.elf)
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                echo ============================================
+                echo Running Tests
+                mv py-patch py-patch.elf
+                ./py-patch.elf -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
+                ./py-patch.elf -f data/testdata/fakeorbis.elf -c orbistest.yml -v
+                ./py-patch.elf -f data/testdata/fakecell.elf -c celltest.yml -v -od
+                ./py-patch.elf -f data/testdata/fakecell.elf -c celltest.yml -v
+                echo ============================================
+
+            - name: Push app artifact - yml (main)
               if: |
                 matrix.os == 'windows-latest' &&
                 github.ref == 'refs/heads/main'
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
-                name: patch-launcher
+                name: py-patch
                 path: |
                   README.md
                   example.yml
-                  launcher.exe
-                if-no-files-found: error
+                  py-patch.elf
+                  py-patch.exe
+                retention-days: 15
 
-            - name: Push app artifact - yml
-              if: github.ref == 'refs/heads/test'
-              uses: actions/upload-artifact@v2
+            - name: Push app artifact - yml (devleopment)
+              if: github.ref == 'refs/heads/dev'
+              uses: actions/upload-artifact@v3
               with:
-                name: patch-launcher
+                name: py-patch
                 path: |
                   README.md
                   example.yml
-                  launcher.exe
-                if-no-files-found: error
+                  py-patch.elf
+                  py-patch.exe
                 retention-days: 2
 
-            - name: Upload binaries
+            - name: Upload linux binaries for release
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              if: |
+                github.event_name == 'workflow_dispatch' &&
+                matrix.os == 'ubuntu-latest'
+              run: |
+                zip -r py-patch-linux.zip py-patch.elf example.yml README.md
+                gh release create $SHORT_SHA py-patch-linux.zip --target $GITHUB_SHA -t "Release - $SHORT_SHA"
+
+            - name: Upload win32 binaries for release
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               if: |
                 github.event_name == 'workflow_dispatch' &&
                 matrix.os == 'windows-latest'
               run: |
-                compress-archive launcher.exe, example.yml, README.md patch-launcher.zip
-                gh release create $env:SHORT_SHA patch-launcher.zip --target $env:GITHUB_SHA -t "Release - $env:SHORT_SHA"
+                ls
+                compress-archive py-patch.exe, example.yml, README.md py-patch-windows.zip
+                gh release upload $env:SHORT_SHA py-patch-windows.zip
