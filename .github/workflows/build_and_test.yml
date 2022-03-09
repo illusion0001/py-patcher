@@ -104,7 +104,7 @@ jobs:
                   example.yml
                   py-patch.elf
                   py-patch.exe
-                retention-days: 15
+                retention-days: 14
 
             - name: Push app artifact - yml (devleopment)
               if: github.ref == 'refs/heads/dev'
@@ -125,8 +125,8 @@ jobs:
                 github.event_name == 'workflow_dispatch' &&
                 matrix.os == 'ubuntu-latest'
               run: |
-                zip -r py-patch-linux.zip py-patch.elf example.yml README.md
-                gh release create $SHORT_SHA py-patch-linux.zip --target $GITHUB_SHA -t "Release - $SHORT_SHA"
+                tar -czvf py-patch-linux.tar.gz py-patch.elf example.yml README.md
+                gh release create $SHORT_SHA py-patch-linux.tar.gz --target $GITHUB_SHA -t "Release - $SHORT_SHA"
 
             - name: Upload win32 binaries for release
               env:
@@ -135,6 +135,5 @@ jobs:
                 github.event_name == 'workflow_dispatch' &&
                 matrix.os == 'windows-latest'
               run: |
-                ls
                 compress-archive py-patch.exe, example.yml, README.md py-patch-windows.zip
                 gh release upload $env:SHORT_SHA py-patch-windows.zip
