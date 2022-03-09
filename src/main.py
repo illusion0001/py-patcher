@@ -81,7 +81,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, ci):
         coloredlogs.set_level(logs.DEBUG)
         # Clone the original file before doing anything else
         # Todo: clone file after headercheck()
-        out = cloneFile(elf_file, outdate)
+    out = cloneFile(elf_file, outdate)
     # Open the config file
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)

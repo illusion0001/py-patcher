@@ -64,6 +64,7 @@ jobs:
                 python launcher.py -f data/testdata/fakeorbis.elf -c orbistest.yml -v
                 python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v -od
                 python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v
+                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml
                 echo ============================================
 
             - name: Run tests (.exe)
@@ -75,6 +76,7 @@ jobs:
                 .\py-patch.exe -f data/testdata/fakeorbis.elf -c orbistest.yml -v
                 .\py-patch.exe -f data/testdata/fakecell.elf -c celltest.yml -v -od
                 .\py-patch.exe -f data/testdata/fakecell.elf -c celltest.yml -v
+                .\py-patch.exe -f data/testdata/fakecell.elf -c celltest.yml
                 echo ============================================
 
             - name: Run tests (.elf)
@@ -87,6 +89,7 @@ jobs:
                 ./py-patch.elf -f data/testdata/fakeorbis.elf -c orbistest.yml -v
                 ./py-patch.elf -f data/testdata/fakecell.elf -c celltest.yml -v -od
                 ./py-patch.elf -f data/testdata/fakecell.elf -c celltest.yml -v
+                ./py-patch.elf -f data/testdata/fakecell.elf -c celltest.yml
                 echo ============================================
 
             - name: Push app artifact - yml (main)
