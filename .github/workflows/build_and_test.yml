@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-    build_and_test:
+    build:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
@@ -34,16 +34,23 @@ jobs:
                 python -m pip install -r requirements.txt
                 python -m pip install tinyaes git+https://github.com/pyinstaller/pyinstaller.git
 
-            - name: Get short SHA (win32)
-              if: matrix.os == 'windows-latest'
-              run: echo "SHORT_SHA=$($env:GITHUB_SHA.SubString(0,7))" >> $env:GITHUB_ENV
-            - name: Get short SHA (linux)
-              if: matrix.os == 'ubuntu-latest'
+            - name: Get short SHA
+              shell: bash
               run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
+            - name: Set key (base)
+              if: |
+                github.event_name == 'push' &&
+                github.repository == 'illusion0001/py-patcher'
+              run: echo "my_key=${{ secrets.tests }}" >> ${{ github.env }}
+
+            - name: Set key (fork)
+              if: |
+                github.event_name == 'pull_request' ||
+                github.repository != 'illusion0001/py-patcher'
+              run: echo "my_key=${{ github.run_id }}" >> ${{ github.env }}
+
             - name: Build application
-              env:
-                my_key: ${{ secrets.tests }}
               run: pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
 
             - name: Run tests (.py)
@@ -72,7 +79,6 @@ jobs:
             - name: Push app artifact
               uses: actions/upload-artifact@v3
               with:
-                name: py-patch-${{ matrix.os }}
                 path: |
                   README.md
                   example.yml
@@ -80,24 +86,22 @@ jobs:
                   py-patch.exe
                 retention-days: 7
 
-            # Steps below are sus and has race conditions
-            # todo: make them into separate jobs
-            - name: Upload linux binaries for release
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              if: |
-                github.event_name == 'workflow_dispatch' &&
-                matrix.os == 'ubuntu-latest'
-              run: |
-                tar -czvf py-patch-linux.tar.gz py-patch example.yml README.md
-                gh release create 1.0"${{ GITHUB.RUN_NUMBER }}" py-patch-linux.tar.gz --target $GITHUB_SHA -t 1.0"${{ GITHUB.RUN_NUMBER }}"
+    push_release:
+      if: github.event_name == 'workflow_dispatch'
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+        - name: Download artifacts
+          uses: actions/download-artifact@v3
+        - name: Create Release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            cd artifact
+            mkdir bin
+            zip bin/py-patch.zip py-patch.exe example.yml README.md
+            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md
+            gh release create 1.0${{ GITHUB.RUN_NUMBER }} bin/* --target ${{ GITHUB.SHA }} -t 1.0${{ GITHUB.RUN_NUMBER }}
 
-            - name: Upload win32 binaries for release
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              if: |
-                github.event_name == 'workflow_dispatch' &&
-                matrix.os == 'windows-latest'
-              run: |
-                compress-archive py-patch.exe, example.yml, README.md py-patch-windows.zip
-                gh release upload 1.0"${{ GITHUB.RUN_NUMBER }}" py-patch-windows.zip
