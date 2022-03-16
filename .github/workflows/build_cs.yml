@@ -3,11 +3,11 @@ name: Build C# Port
 on:
   push:
     paths:
-      - '.github/workflows/*'
+      - '.github/workflows/build_cs.yml'
       - 'csharp-port/console-patch/*'
   pull_request:
     paths:
-      - '.github/workflows/*'
+      - '.github/workflows/build_cs.yml'
       - 'csharp-port/console-patch/*'
   workflow_dispatch:
 
@@ -28,6 +28,18 @@ jobs:
                 dotnet-version: 6.x
             - name: Build
               run: |
-                dotnet build csharp-port/console-patch -c Release
+                dotnet publish csharp-port/console-patch -v normal -c Release
                 ls -R csharp-port/console-patch
+
+            - name: Run Tests
+              run: |
+                cd csharp-port/console-patch/bin/Release/net6.0/publish
+                ./console-patch "${{ GITHUB.WORKSPACE }}/data/testdata/testdata.elf" param_2 0x100
+
+            - name: Push app artifact
+              uses: actions/upload-artifact@v3
+              with:
+                name: ${{ matrix.os }}
+                path: csharp-port/console-patch/bin/Release/net6.0/publish/**
+                retention-days: 7
 
