@@ -1,0 +1,33 @@
+name: Build C# Port
+
+on:
+  push:
+    paths:
+      - '.github/workflows/*'
+      - 'csharp-port/console-patch/*'
+  pull_request:
+    paths:
+      - '.github/workflows/*'
+      - 'csharp-port/console-patch/*'
+  workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup dotnet
+              uses: actions/setup-dotnet@v2
+              with:
+                dotnet-version: 6.x
+            - name: Build
+              run: |
+                dotnet build csharp-port/console-patch -c Release
+                ls -R csharp-port/console-patch
+

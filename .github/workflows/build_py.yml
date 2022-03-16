@@ -3,12 +3,12 @@ name: Build and test PyPatcher
 on:
   push:
     paths:
-      - '.github/workflows/*'
+      - '.github/workflows/build_py.yml'
       - 'src/**'
       - 'data/**'
   pull_request:
     paths:
-      - '.github/workflows/*'
+      - '.github/workflows/build_py.yml'
       - 'src/**'
       - 'data/**'
   workflow_dispatch:

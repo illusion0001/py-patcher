@@ -1,14 +1,8 @@
-# ignore
-*.*
 *.exe
-
-# except
-!.github/workflows/*.yml
-!.gitkeep
-!*.py
-!src/*.py
-!archtype/*.py
-!data/**
-!*.yml
-!*.md
-!requirements.txt
+*.pyc
+**\build
+*.spec
+**\bin
+**\obj
+**\.vs
+**\properties
