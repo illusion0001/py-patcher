@@ -53,4 +53,3 @@
        - [ float32, 0x20044,  0.5 ]
        - [ float64, 0x20048,  0.5 ]
        - [ utf8, 0x20050, "testing out the generic type text" ]
-       #- [ aob, "7265706c616365206d6531, "7265706c616365206d6532" ]

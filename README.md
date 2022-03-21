@@ -33,5 +33,4 @@ options:
 
 ## Todo-list
 
-- [ ] Add array of bytes support (find and replace)
 - [ ] Move Patch Enabled field to auto generated file

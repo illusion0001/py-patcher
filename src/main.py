@@ -10,8 +10,7 @@ from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis
 # Easily load different architectures
 arch_dic = {
     "CELL": Cell,
-    "GENERIC": Generic,  # for direct and array of bytes
-    # (AOB pattern find and replace)
+    "GENERIC": Generic, # for direct file patch
     "ORBIS": Orbis,
     "GENERIC_ORBIS": GenericOrbis
 }
@@ -28,7 +27,7 @@ def patchfile(offset, value, out, count):
 
 def headercheck(archs, elf):
     header = open(elf, "rb")
-    cell_valid_header = b'\x7F\x45\x4C\x46\x02\x02\x01\x66'
+    cell_valid_header =   b'\x7F\x45\x4C\x46\x02\x02\x01\x66'
     orbis_valid_header1 = b'\x7F\x45\x4C\x46\x02\x01\x01\x09'
     orbis_valid_header2 = b'\x2F\x6C\x69\x62\x65\x78\x65\x63\x2F\x6C\x64\x2D\x65\x6C\x66\x2E\x73\x6F\x2E\x31'
     if archs == 'cell':
