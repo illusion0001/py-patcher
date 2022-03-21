@@ -15,15 +15,17 @@ Simple Binary Patching for console games in Python.
 See syntax in [example.yml](data/example.yml)
 
 ```
-launcher.py -h
-usage: launcher.py [-h] -f FILE -c CONFIG [-v] [-od] [-ci]
+launcher.py -husage: launcher.py [-h] -f FILE -c CONFIG [-v] [-od] [-o OUTPUTPATH] [-ci]
+
 options:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  The ELF file to be patched.
+  -f FILE, --file FILE  Specify file to be patched.
   -c CONFIG, --config CONFIG
-                        The configuration file.
+                        Specify patch file.
   -v, --verbose         Enable Verbose Mode.
   -od, --outputdate     Append date and time to output directory.
+  -o OUTPUTPATH, --outputpath OUTPUTPATH
+                        Specify output file path.
   -ci, --cibuild        For running tests on buildbot.
 ```
 

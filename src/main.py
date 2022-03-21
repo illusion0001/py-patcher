@@ -62,25 +62,27 @@ def headercheck(archs, elf):
             os.abort()
     header.close()
 
-def cloneFile(elf_file, outdate=False):
+def cloneFile(elf_file, outdate=False, output=None):
     if outdate:
         out = os.path.join(os.getcwd(), datetime.now().strftime(
             '{0}-%Y-%m-%d-%H-%M-%S/{0}'.format(os.path.basename(elf_file))))
-    else:
+    elif outdate == False and output == None:
         out = os.path.join(os.getcwd(), ('{0}-patched/{0}'.format(os.path.basename(elf_file))))
+    if output:
+        out = '{0}/{1}'.format(output, os.path.basename(elf_file))
     # Clone the file
     logs.info('\nSaving file to: {}'.format(out))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     shutil.copyfile(elf_file, out)
     return out
 
-def loadConfig(elf_file, conf_file, verbose, outdate, ci):
+def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
     # Checking desired verbosity level
     if verbose:
         coloredlogs.set_level(logs.DEBUG)
         # Clone the original file before doing anything else
         # Todo: clone file after headercheck()
-    out = cloneFile(elf_file, outdate)
+    out = cloneFile(elf_file, outdate, outputpath)
     # Open the config file
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)

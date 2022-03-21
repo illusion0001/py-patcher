@@ -43,11 +43,11 @@ if __name__ == "__main__":
     parser.add_argument('-f',
                         '--file',
                         required=True,
-                        help='The ELF file to be patched.')
+                        help='Specify file to be patched.')
     parser.add_argument('-c',
                         '--config',
                         required=True,
-                        help='The configuration file.')
+                        help='Specify patch file.')
     parser.add_argument('-v',
                         '--verbose',
                         required=False,
@@ -58,6 +58,10 @@ if __name__ == "__main__":
                         required=False,
                         action="store_true",
                         help='Append date and time to output directory.')
+    parser.add_argument('-o',
+                        '--outputpath',
+                        required=False,
+                        help='Specify output file path.')
     parser.add_argument('-ci',
                         '--cibuild',
                         required=False,
@@ -66,4 +70,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load the config file, and patch the ELF file
-    loadConfig(args.file, args.config, args.verbose, args.outputdate, args.cibuild)
+    loadConfig(args.file, args.config, args.verbose, args.outputdate, args.outputpath, args.cibuild)
