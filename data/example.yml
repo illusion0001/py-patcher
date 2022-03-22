@@ -8,18 +8,18 @@
   enabled: True # Todo: move this to a separate file
   patch_list:
       # - [ syntax ]
-      # - [ Cell Elf Base  : 0x10000  ]
-      # - [ Orbis Elf Base : 0x400000 ]
+      # - [ Generic Base   : 0x0      ] # beginning of file
+      # - [ Cell Elf Base  : 0x10000  ] # elf base
+      # - [ Orbis Elf Base : 0x400000 ] # disabled aslr base
       # - [ Orbis only accepts disabled aslr address (i.e from PS4 Cheater, Ghidra or IDA). ]
       # - [ patch_type, ElfAddr, "HexByteArray" (orbis or generic only) ]
+
        - [ bytes, 0x40000c, "90 c3 be 00" ] # spaces doesn't matter
        - [ utf8, 0x400004, "My utf8 string!" ]
        - [ float32, 0x400018, 0.0333333333 ] # little endian
        - [ float64, 0x400020, 0.5 ] # little endian
-       - [ bytes32, 0x400080,  0x60000000 ]
-       - [ bytes64, 0x400084,  0x6000000060000000 ]
-        # f32 = float
-        # f64 = double precision float
+       - [ bytes32, 0x400080, 0x60000000 ]
+       - [ bytes64, 0x400084, 0x6000000060000000 ]
 
 - game: "Game Title1"
   app_ver: "01.00"
@@ -30,15 +30,15 @@
   enabled: True # Todo: move this to a separate file
   arch: cell
   patch_list:
-       - [ utf8, 0x10000,  "My utf8 string!" ]
-       - [ bytes32, 0x20080,  0x60000000 ]
-       - [ bytes64, 0x20080,  0x6000000060000000 ]
-       - [ bytes16, 0x20084,  0xF00D ]
-       - [ byte, 0x20088,  0xFF ]
-       - [ float32, 0x1002c,  0.5 ] # must be byte swapped to big endian
-       - [ float64, 0x20090,  0.5 ]
-        # f32 = float
-        # f64 = double precision float
+       - [ utf8, 0x10000, "My utf8 string!" ]
+       - [ bytes, 0x200c8, "60 00 00 00" ]
+       - [ bytes, 0x200cc, "60000000" ]
+       - [ byte, 0x20088, 0xFF ]
+       - [ bytes16, 0x20084, 0xF00D ]
+       - [ bytes32, 0x20080, 0x60000000 ]
+       - [ bytes64, 0x20080, 0x6000000060000000 ]
+       - [ float32, 0x1002c, 0.5 ]
+       - [ float64, 0x20090, 0.5 ]
 
 - game: "Game Title3"
   app_ver: "00.00"
@@ -49,7 +49,7 @@
   enabled: True # Todo: move this to a separate file
   arch: generic
   patch_list:
-       - [ bytes, 0x20040,  "60 00 55 00" ]
-       - [ float32, 0x20044,  0.5 ]
-       - [ float64, 0x20048,  0.5 ]
+       - [ bytes, 0x20040, "60 00 55 00" ]
+       - [ float32, 0x20044, 0.5 ]
+       - [ float64, 0x20048, 0.5 ]
        - [ utf8, 0x20050, "testing out the generic type text" ]
