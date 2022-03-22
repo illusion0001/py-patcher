@@ -50,6 +50,14 @@ jobs:
                 github.repository != 'illusion0001/py-patcher'
               run: echo my_key="${{ github.run_id }}" >> ${{ github.env }}
 
+            - name: Set artifact condition (if workflow dispatch)
+              if: github.event_name == 'workflow_dispatch'
+              run: echo artifact_days=1 >> ${{ github.env }}
+
+            - name: Set artifact condition (else)
+              if: github.event_name != 'workflow_dispatch'
+              run: echo artifact_days=14 >> ${{ github.env }}
+
             - name: Build application
               run: pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
 
@@ -84,10 +92,11 @@ jobs:
               with:
                 path: |
                   README.md
+                  LICENSE
                   example.yml
                   py-patch
                   py-patch.exe
-                retention-days: 7
+                retention-days: ${{ env.artifact_days }}
 
     push_release:
       if: github.event_name == 'workflow_dispatch'
@@ -104,7 +113,7 @@ jobs:
           run: |
             cd artifact
             mkdir bin
-            zip bin/py-patch.zip py-patch.exe example.yml README.md
-            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md
+            zip bin/py-patch.zip py-patch.exe example.yml README.md LICENSE
+            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE
             gh release create 1.${{ GITHUB.RUN_NUMBER }} bin/* --target ${{ GITHUB.SHA }} -t 1.${{ GITHUB.RUN_NUMBER }}
 
