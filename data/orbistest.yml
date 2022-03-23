@@ -12,11 +12,13 @@
       # - [ Orbis Elf Base : 0x400000 ]
       # - [ Orbis only accepts disabled aslr address (i.e from PS4 Cheater, Ghidra or IDA). ]
       # - [ patch_type, ElfAddr, "HexByteArray" (orbis or generic only) ]
+       - [ bytes, 0x400000, "90c3be00" ] # spaces doesn't matter
        - [ bytes, 0x40000c, "90 c3 be 00" ] # spaces doesn't matter
        - [ utf8, 0x400004, "My utf8 string!" ]
-       - [ float32, 0x400018, 0.0333333333 ] # little endian
-       - [ float64, 0x400020, 0.5 ] # little endian
-       - [ bytes32, 0x400080,  0x60000000 ]
-       - [ bytes64, 0x400084,  0x6000000060000000 ]
+       - [ utf16, 0x400014, "My utf16 string!" ]
+       - [ float32, 0x400018, 0.0333333333 ]
+       - [ float64, 0x400020, 0.5 ]
+       - [ bytes32, 0x400080, 0x60000000 ]
+       - [ bytes64, 0x400084, 0x6000000060000000 ]
         # f32 = float
         # f64 = double precision float

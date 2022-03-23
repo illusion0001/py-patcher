@@ -14,10 +14,12 @@
       # - [ Orbis only accepts disabled aslr address (i.e from PS4 Cheater, Ghidra or IDA). ]
       # - [ patch_type, ElfAddr, "HexByteArray" (orbis or generic only) ]
 
+       - [ bytes, 0x400000, "90c3be00" ] # spaces doesn't matter
        - [ bytes, 0x40000c, "90 c3 be 00" ] # spaces doesn't matter
        - [ utf8, 0x400004, "My utf8 string!" ]
-       - [ float32, 0x400018, 0.0333333333 ] # little endian
-       - [ float64, 0x400020, 0.5 ] # little endian
+       - [ utf16, 0x400014, "My utf16 string!" ]
+       - [ float32, 0x400018, 0.0333333333 ]
+       - [ float64, 0x400020, 0.5 ]
        - [ bytes32, 0x400080, 0x60000000 ]
        - [ bytes64, 0x400084, 0x6000000060000000 ]
 
@@ -31,6 +33,7 @@
   arch: cell
   patch_list:
        - [ utf8, 0x10000, "My utf8 string!" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]
        - [ bytes, 0x200c8, "60 00 00 00" ]
        - [ bytes, 0x200cc, "60000000" ]
        - [ byte, 0x20088, 0xFF ]
@@ -53,3 +56,4 @@
        - [ float32, 0x20044, 0.5 ]
        - [ float64, 0x20048, 0.5 ]
        - [ utf8, 0x20050, "testing out the generic type text" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]
