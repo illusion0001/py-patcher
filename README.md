@@ -20,7 +20,8 @@ Latest binaries: https://github.com/illusion0001/py-patcher/releases/latest
 
 ### Types
 
-- utf8 - text string (must be enclosed with quotation marks. i.e `"hello world!"` )
+- utf8 - text string (must be enclosed with quotation marks. i.e  `"hello world!"` )
+- utf16 - text string (must be enclosed with quotation marks. i.e `"hello world!"` )
 - bytes - byte array (i.e `90 90 90 90` or `90909090` )
 - byte - 1 byte
 - bytes16 - 2 bytes
@@ -29,7 +30,7 @@ Latest binaries: https://github.com/illusion0001/py-patcher/releases/latest
 - float32 - single 32 bit float
 - float64 - double 64 bit float
 
-Examples: https://github.com/illusion0001/py-patcher/blob/6753a1cf1db9f40e92962a08f2dcb33b272eaa13/data/example.yml#L32-L41
+Examples: https://github.com/illusion0001/py-patcher/blob/ee25ad07d6b4ca386019649cc8afacd4a6290bb9/data/example.yml#L34-L44
 
 ### Program usage
 
