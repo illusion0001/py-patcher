@@ -12,7 +12,8 @@ class types:
             'bytes64': self.bytes64,
             'float32': self.float32,
             'float64': self.float64,
-            'utf8': self.utf8
+            'utf8': self.utf8,
+            'utf16': self.utf16
         }
 
     def convert(self, value, type):
@@ -43,6 +44,9 @@ class types:
 
     def utf8(self, value):
         return value.encode('utf-8')
+
+    def utf16(self, value):
+        return value.encode('utf-16le')
 
     # https://stackoverflow.com/questions/23624212/how-to-convert-a-float-into-hex
     def __float_to_hex(self, f):
