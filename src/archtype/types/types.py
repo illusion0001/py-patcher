@@ -46,7 +46,11 @@ class types:
         return value.encode('utf-8')
 
     def utf16(self, value):
-        return value.encode('utf-16le')
+        if self.endian == 'big':
+            utf16format = 'utf-16be'
+        else:
+            utf16format = 'utf-16le'
+        return value.encode(utf16format)
 
     # https://stackoverflow.com/questions/23624212/how-to-convert-a-float-into-hex
     def __float_to_hex(self, f):
