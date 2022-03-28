@@ -1,0 +1,44 @@
+- game: "Game Title3"
+  app_ver: "00.00"
+  #patch_ver: "1.0"
+  #name: "Patch Title4"
+  author: "having skill"
+  note: "issues"
+  #enabled: True # Todo: move this to a separate file
+  arch: generic
+  patch_list:
+       - [ bytes, 0x20040, "60 00 55 00" ]
+       - [ float32, 0x20044, 0.5 ]
+       - [ float64, 0x20048, 0.5 ]
+       - [ utf8, 0x20050, "testing out the generic type text" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]
+
+- game: "Game Title3"
+  #app_ver: "00.00"
+  #patch_ver: "1.0"
+  #name: "Patch Title4"
+  author: "having skill"
+  #note: "issues"
+  enabled: True # Todo: move this to a separate file
+  arch: generic
+  patch_list:
+       - [ bytes, 0x20040, "60 00 55 00" ]
+       - [ float32, 0x20044, 0.5 ]
+       - [ float64, 0x20048, 0.5 ]
+       - [ utf8, 0x20050, "testing out the generic type text" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]
+
+- game: "Game Title3"
+  app_ver: "00.00"
+  #patch_ver: "1.0"
+  #name: "Patch Title4"
+  author: "having skill"
+  note: "issues"
+  enabled: True # Todo: move this to a separate file
+  arch: generic
+  patch_list:
+       - [ bytes, 0x20040, "60 00 55 00" ]
+       - [ float32, 0x20044, 0.5 ]
+       - [ float64, 0x20048, 0.5 ]
+       - [ utf8, 0x20050, "testing out the generic type text" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]

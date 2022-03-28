@@ -87,13 +87,23 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
         for i in range(0, len(read_data)):
+            missing_key  = 'Unknown String!'
+            game         = read_data[i].get('game',      missing_key)
+            app_ver      = read_data[i].get('app_ver',   missing_key)
+            patch_ver    = read_data[i].get('patch_ver', missing_key)
+            name         = read_data[i].get('name',      missing_key)
+            patch_author = read_data[i].get('author',    missing_key)
+            note         = read_data[i].get('note',      missing_key)
+            enabled      = read_data[i].get('enabled',   'True') # Todo: Autogen this
+            arch         = read_data[i].get('arch',      missing_key)
+            patch_list   = read_data[i]['patch_list']
             # Run headercheck() depending on run mode
             if ci:
                 logs.debug('\nRunning in Buildbot Mode.')
             else:
                 logs.debug('\nRunning in User Mode.')
                 # Verify the ELF file
-                headercheck(read_data[i]['arch'], elf_file)
+                headercheck(arch, elf_file)
             # Print Metadata
             logs.info("\n"
                       "=====================\n"
@@ -107,21 +117,22 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
                       "= Architecture  : {}\n"
                       "====================="
                 .format(
-                read_data[i]['game'], read_data[i]['app_ver'], read_data[i]['patch_ver'], read_data[i]['name'],
-                read_data[i]['author'], read_data[i]['note'], read_data[i]['enabled'], read_data[i]['arch']))
+                game, app_ver, patch_ver, name,
+                patch_author, note, enabled, arch))
             count = 0
-            if read_data[i]['enabled'] == False:
-
-                logs.warning('\nPatch: "{}" for "{}" is disabled and will be skipped.'.format(read_data[i]['name'],
-                                                                                              read_data[i]['game'], ))
+            if enabled == False:
+                logs.warning('\nPatch: "{}" for "{}" is disabled and will be skipped.'.format(game, name))
             else:
                 ## Load the architecture according to the config
-                if read_data[i]['arch'].upper() in arch_dic.keys():
-                    architecture = arch_dic.get(read_data[i]['arch'].upper())()
+                if arch.upper() in arch_dic.keys():
+                    architecture = arch_dic.get(arch.upper())()
                     # Reading patch list
-                    for patch_data in read_data[i]['patch_list']:
+                    for patch_data in patch_list:
                         count += 1
                         logs.info("\nApplying patch: {}".format(count))
+                        patch_type  = patch_data[0]
+                        patch_addr  = patch_data[1]
+                        patch_value = patch_data[2]
                         logs.debug("\n"
                                    "====================\n"
                                    "= Patch Type    : {}\n"
@@ -130,9 +141,9 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
                                    "= OutFile       : {}\n"
                                    "= Line          : {}\n"
                                    "===================="
-                                   .format(patch_data[0], hex(patch_data[1]), patch_data[2], out, count))
+                                   .format(patch_type, hex(patch_addr), patch_value, out, count))
                         # Process the patch according to it's architecture
-                        final_data = architecture.convertData(patch_data[0], patch_data[1], patch_data[2])
+                        final_data = architecture.convertData(patch_type, patch_addr, patch_value)
                         patchfile(final_data.get('offset'), final_data.get('value'), out, count)
                 else:
-                    logs.error("\n{} is not a supported Architecture.".format(read_data[i]['arch']))
+                    logs.error("\n{} is not a supported Architecture.".format(arch))
