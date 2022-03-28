@@ -35,7 +35,7 @@ jobs:
                 python -m pip install tinyaes git+https://github.com/pyinstaller/pyinstaller.git
 
             - name: Get short SHA
-              shell: bash
+              shell: bash # for linux and win32
               run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
             - name: Set key (base)
@@ -51,41 +51,31 @@ jobs:
               run: echo my_key="${{ github.run_id }}" >> ${{ github.env }}
 
             - name: Set artifact condition (if workflow dispatch)
-              if: github.event_name == 'workflow_dispatch'
+              if: |
+                github.event_name == 'workflow_dispatch' ||
+                github.ref_name != 'main'
               run: echo artifact_days=1 >> ${{ github.env }}
 
             - name: Set artifact condition (else)
-              if: github.event_name != 'workflow_dispatch'
+              if: |
+                github.event_name != 'workflow_dispatch'
+                && github.ref_name == 'main'
               run: echo artifact_days=14 >> ${{ github.env }}
 
             - name: Build application
               run: pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
 
-            - name: Run tests (.py)
+            - name: Prepare tests
               run: |
-                cp data/*.yml .
+                cp -r data/* .
                 mkdir output-file
-                echo ============================================
-                echo Running Tests
-                python launcher.py -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
-                python launcher.py -f data/testdata/fakeorbis.elf -c orbistest.yml -v
-                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v -od
-                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v -o output-file
-                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml -v
-                python launcher.py -f data/testdata/fakecell.elf -c celltest.yml
-                echo ============================================
+                chmod +x *.sh
+
+            - name: Run tests (.py)
+              run: ./testpy.sh
 
             - name: Run tests (built executable)
-              run: |
-                echo ==========================================================
-                echo Running Tests
-                ./py-patch -f data/testdata/fakeorbis.elf -c orbistest.yml -v -od
-                ./py-patch -f data/testdata/fakeorbis.elf -c orbistest.yml -v
-                ./py-patch -f data/testdata/fakecell.elf -c celltest.yml -v -od
-                ./py-patch -f data/testdata/fakecell.elf -c celltest.yml -v -o output-file
-                ./py-patch -f data/testdata/fakecell.elf -c celltest.yml -v
-                ./py-patch -f data/testdata/fakecell.elf -c celltest.yml
-                echo ==========================================================
+              run: ./testapp.sh
 
             - name: Push app artifact
               uses: actions/upload-artifact@v3

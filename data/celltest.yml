@@ -4,6 +4,28 @@
   name: "Patch Title1"
   author: "having skill"
   note: "issues"
+  enabled: False # Todo: move this to a separate file
+  arch: cell
+  patch_list:
+       - [ utf8, 0x10000, "My utf8 string!" ]
+       - [ utf16, 0x12000, "My utf16 string!" ]
+       - [ bytes, 0x200c8, "60 00 00 00" ]
+       - [ bytes, 0x200cc, "60000000" ]
+       - [ byte, 0x20088, 0xFF ]
+       - [ bytes16, 0x20084, 0xF00D ]
+       - [ bytes32, 0x20080, 0x60000000 ]
+       - [ bytes64, 0x20080, 0x6000000060000000 ]
+       - [ float32, 0x1002c, 0.5 ]
+       - [ float64, 0x20090, 0.5 ]
+        # f32 = float
+        # f64 = double precision float
+
+- game: "Game Title1"
+  app_ver: "01.00"
+  patch_ver: "1.0"
+  name: "Patch Title1"
+  author: "having skill"
+  note: "issues"
   enabled: True # Todo: move this to a separate file
   arch: cell
   patch_list:
