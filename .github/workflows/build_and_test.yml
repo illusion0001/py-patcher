@@ -1,4 +1,4 @@
-name: Build and test PyPatcher
+name: Build
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
                 python -m pip install tinyaes git+https://github.com/pyinstaller/pyinstaller.git
 
             - name: Get short SHA
-              shell: bash # for linux and win32
+              shell: bash
               run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
             - name: Set key (base)
@@ -58,8 +58,8 @@ jobs:
 
             - name: Set artifact condition (else)
               if: |
-                github.event_name != 'workflow_dispatch'
-                && github.ref_name == 'main'
+                github.event_name != 'workflow_dispatch' &&
+                github.ref_name == 'main'
               run: echo artifact_days=14 >> ${{ github.env }}
 
             - name: Build application
@@ -71,11 +71,11 @@ jobs:
                 mkdir output-file
                 chmod +x *.sh
 
-            - name: Run tests (.py)
-              run: ./testpy.sh
-
-            - name: Run tests (built executable)
-              run: ./testapp.sh
+            - name: Run tests
+              shell: bash
+              run: |
+                 ./testpy.sh
+                 ./testapp.sh
 
             - name: Push app artifact
               uses: actions/upload-artifact@v3
@@ -91,19 +91,40 @@ jobs:
     push_release:
       if: github.event_name == 'workflow_dispatch'
       needs: build
+
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
           uses: actions/checkout@v3
+          with:
+            fetch-depth: 0
+
+        - name: Checkout release repo
+          uses: actions/checkout@v3
+          with:
+            repository: illusion0001/py-patcher-bin
+            path: release-repo
+
         - name: Download artifacts
           uses: actions/download-artifact@v3
-        - name: Create Release
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Prepare release
           run: |
+            cp data/*.sh .
+            chmod +x *.sh
+            ./cl.sh
+            cd release-repo
+            echo hash=`git rev-parse HEAD` >> ${{ github.env }}
+            cd ..
+            echo commit=`git rev-list HEAD --count` >> ${{ github.env }}
+            cp *.md artifact
             cd artifact
             mkdir bin
-            zip bin/py-patch.zip py-patch.exe example.yml README.md LICENSE
-            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE
-            gh release create 1.${{ GITHUB.RUN_NUMBER }} bin/* --target ${{ GITHUB.SHA }} -t 1.${{ GITHUB.RUN_NUMBER }}
+            zip bin/py-patch-windows.zip py-patch.exe example.yml README.md LICENSE changelist.md
+            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE changelist.md
+
+        - name: Push release
+          env:
+            GITHUB_TOKEN: ${{ secrets.repo2 }}
+          run: gh release create 1.$commit artifact/bin/* --target $hash -t 1.$commit -F changelist.md -R illusion0001/py-patcher-bin
 

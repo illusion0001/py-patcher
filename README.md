@@ -1,8 +1,8 @@
-# py-patcher
+# [py-patcher](../../../../illusion0001/py-patcher)
 
 Simple Binary Patching for console games in Python.
 
-Latest binaries: https://github.com/illusion0001/py-patcher/releases/latest
+Latest binaries: https://github.com/illusion0001/py-patcher-bin/releases/latest
 
 [![Build and test PyPatcher](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/illusion0001/py-patcher/actions/workflows/build_and_test.yml)
 
@@ -54,6 +54,10 @@ options:
 # Credits
 - ShadowDog
 - [aerosoul94](https://github.com/aerosoul94)
+
+# Patch Files
+
+https://illusion0001.github.io/_patch/patch.zip
 
 # Todo-list
 
