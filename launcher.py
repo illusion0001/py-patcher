@@ -44,8 +44,8 @@ if __name__ == "__main__":
                         '--file',
                         required=True,
                         help='Specify file to be patched.')
-    parser.add_argument('-c',
-                        '--config',
+    parser.add_argument('-p',
+                        '--patch',
                         required=True,
                         help='Specify patch file.')
     parser.add_argument('-v',
@@ -54,20 +54,25 @@ if __name__ == "__main__":
                         action="store_true",
                         help='Enable Verbose Mode.')
     parser.add_argument('-od',
-                        '--outputdate',
+                        '--output_date',
                         required=False,
                         action="store_true",
                         help='Append date and time to output directory.')
     parser.add_argument('-o',
-                        '--outputpath',
+                        '--output_path',
                         required=False,
                         help='Specify output file path.')
     parser.add_argument('-ci',
-                        '--cibuild',
+                        '--ci_build',
                         required=False,
                         action="store_true",
                         help='For running tests on buildbot.')
+    parser.add_argument('-y',
+                        '--always_yes',
+                        required=False,
+                        action="store_false",
+                        help='Always skip confirmation prompts.')
     args = parser.parse_args()
 
     # Load the config file, and patch the ELF file
-    loadConfig(args.file, args.config, args.verbose, args.outputdate, args.outputpath, args.cibuild)
+    loadConfig(args.file, args.patch, args.verbose, args.output_date, args.output_path, args.ci_build, args.always_yes)

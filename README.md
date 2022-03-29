@@ -36,28 +36,24 @@ Examples: https://github.com/illusion0001/py-patcher/blob/ee25ad07d6b4ca38601964
 
 ```
 launcher.py -h
-
-Usage: launcher.py [-h] -f FILE -c CONFIG [-v] [-od] [-o OUTPUTPATH] [-ci]
+usage: launcher.py [-h] -f FILE -p PATCH [-v] [-od] [-o OUTPUT_PATH] [-ci] [-y]
 
 options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Specify file to be patched.
-  -c CONFIG, --config CONFIG
+  -p PATCH, --patch PATCH
                         Specify patch file.
   -v, --verbose         Enable Verbose Mode.
-  -od, --outputdate     Append date and time to output directory.
-  -o OUTPUTPATH, --outputpath OUTPUTPATH
+  -od, --output_date    Append date and time to output directory.
+  -o OUTPUT_PATH, --output_path OUTPUT_PATH
                         Specify output file path.
-  -ci, --cibuild        For running tests on buildbot.
+  -ci, --ci_build       For running tests on buildbot.
+  -y, --always_yes      Always skip confirmation prompts.
 ```
 
 # Credits
 - ShadowDog
 - [aerosoul94](https://github.com/aerosoul94)
-
-# Patch Files
-
-https://illusion0001.github.io/_patch/patch.zip
 
 # Todo-list
 

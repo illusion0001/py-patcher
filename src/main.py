@@ -41,7 +41,7 @@ def headercheck(archs, elf):
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is decrypted.\n"
-                       "No changes will be made to the patched file.\n"
+                       "Aborting.\n"
                        "========================".format(elf))
             os.abort()
     if archs == 'orbis' or archs == 'generic_orbis' :
@@ -57,7 +57,7 @@ def headercheck(archs, elf):
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is a valid dump from AppDumper and Retail Disc/Digital, not Fake Packaged Titles.\n"
-                       "No changes will be made to the patched file.\n"
+                       "Aborting.\n"
                        "========================".format(elf))
             os.abort()
     header.close()
@@ -76,34 +76,33 @@ def cloneFile(elf_file, outdate=False, output=None):
     shutil.copyfile(elf_file, out)
     return out
 
-def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
-    # Checking desired verbosity level
-    if verbose:
-        coloredlogs.set_level(logs.DEBUG)
-        # Clone the original file before doing anything else
-        # Todo: clone file after headercheck()
-    out = cloneFile(elf_file, outdate, outputpath)
-    # Open the config file
+def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt):
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
         for i in range(0, len(read_data)):
-            missing_key  = 'Unknown String!'
+            missing_key  = ''
+            arch = read_data[i].get('arch', missing_key)
+    # Checking desired verbosity level
+        if verbose:
+            coloredlogs.set_level(logs.DEBUG)
+        if ci:
+            logs.debug('\nRunning in Buildbot Mode.')
+        else:
+            logs.debug('\nRunning in User Mode.')
+            # Verify file
+            headercheck(arch, elf_file)
+            out = cloneFile(elf_file, outdate, outputpath)
+    # Open config file
+        for i in range(0, len(read_data)):
             game         = read_data[i].get('game',      missing_key)
             app_ver      = read_data[i].get('app_ver',   missing_key)
             patch_ver    = read_data[i].get('patch_ver', missing_key)
             name         = read_data[i].get('name',      missing_key)
             patch_author = read_data[i].get('author',    missing_key)
             note         = read_data[i].get('note',      missing_key)
-            enabled      = read_data[i].get('enabled',   'True') # Todo: Autogen this
+            enabled      = read_data[i].get('enabled',        'True') # Todo: Autogen this
             arch         = read_data[i].get('arch',      missing_key)
             patch_list   = read_data[i]['patch_list']
-            # Run headercheck() depending on run mode
-            if ci:
-                logs.debug('\nRunning in Buildbot Mode.')
-            else:
-                logs.debug('\nRunning in User Mode.')
-                # Verify the ELF file
-                headercheck(arch, elf_file)
             # Print Metadata
             logs.info("\n"
                       "=====================\n"
@@ -120,8 +119,18 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci):
                 game, app_ver, patch_ver, name,
                 patch_author, note, enabled, arch))
             count = 0
+            patch_msg = '\nPatch: "{}" for "{}" is disabled and will be skipped.'.format(name, game)
+            patch_msg_flag = False
+            if patch_prompt:
+                answer = input('Would you like to apply this patch?: [y/n]')
+                if not answer or answer[0].lower() != 'y':
+                    patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game)
+                    logs.warning(patch_msg)
+                    patch_msg_flag = True
+                    enabled = False
             if enabled == False:
-                logs.warning('\nPatch: "{}" for "{}" is disabled and will be skipped.'.format(game, name))
+                if patch_msg_flag == False:
+                    logs.warning(patch_msg)
             else:
                 ## Load the architecture according to the config
                 if arch.upper() in arch_dic.keys():
