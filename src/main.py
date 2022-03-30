@@ -62,7 +62,7 @@ def headercheck(archs, elf):
             os.abort()
     header.close()
 
-def cloneFile(elf_file, outdate=False, output=None):
+def cloneFile(elf_file, outdate=False, output=None, patched=False):
     if outdate:
         out = os.path.join(os.getcwd(), datetime.now().strftime(
             '{0}-%Y-%m-%d-%H-%M-%S/{0}'.format(os.path.basename(elf_file))))
@@ -71,12 +71,16 @@ def cloneFile(elf_file, outdate=False, output=None):
     if output:
         out = '{0}/{1}'.format(output, os.path.basename(elf_file))
     # Clone the file
-    logs.info('\nSaving file to: {}'.format(out))
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    shutil.copyfile(elf_file, out)
+    if patched == False:
+        logs.info('\nSaving file to: {}'.format(out))
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        shutil.copyfile(elf_file, out)
     return out
 
 def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt):
+    program_msg = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher\n\nOperations completed, closing program.'
+    patched = False
+    logs.info("\nOpening patch file: {}".format(conf_file))
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
         for i in range(0, len(read_data)):
@@ -91,7 +95,6 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
             logs.debug('\nRunning in User Mode.')
             # Verify file
             headercheck(arch, elf_file)
-            out = cloneFile(elf_file, outdate, outputpath)
     # Open config file
         for i in range(0, len(read_data)):
             game         = read_data[i].get('game',      missing_key)
@@ -119,12 +122,12 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                 game, app_ver, patch_ver, name,
                 patch_author, note, enabled, arch))
             count = 0
-            patch_msg = '\nPatch: "{}" for "{}" is disabled and will be skipped.'.format(name, game)
+            patch_msg = '\nPatch: "{}" for "{}" ({}) is disabled and will be skipped.'.format(name, game, app_ver)
             patch_msg_flag = False
             if patch_prompt:
-                answer = input('Would you like to apply this patch?: [y/n]')
+                answer = input('Would you like to apply this patch?: [y/n]: ')
                 if not answer or answer[0].lower() != 'y':
-                    patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game)
+                    patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game, app_ver)
                     logs.warning(patch_msg)
                     patch_msg_flag = True
                     enabled = False
@@ -132,6 +135,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                 if patch_msg_flag == False:
                     logs.warning(patch_msg)
             else:
+                out = cloneFile(elf_file, outdate, outputpath, patched)
                 ## Load the architecture according to the config
                 if arch.upper() in arch_dic.keys():
                     architecture = arch_dic.get(arch.upper())()
@@ -154,5 +158,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         # Process the patch according to it's architecture
                         final_data = architecture.convertData(patch_type, patch_addr, patch_value)
                         patchfile(final_data.get('offset'), final_data.get('value'), out, count)
+                        patched = True
                 else:
                     logs.error("\n{} is not a supported Architecture.".format(arch))
+    logs.debug(program_msg)
