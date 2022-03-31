@@ -125,7 +125,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
             patch_msg = '\nPatch: "{}" for "{}" ({}) is disabled and will be skipped.'.format(name, game, app_ver)
             patch_msg_flag = False
             if patch_prompt:
-                answer = input('Would you like to apply this patch?: [y/n]: ')
+                answer = input('File to be patched: {}\nConfirmation:\nAre you sure you want to apply this patch?: [y/n]: '.format(elf_file))
                 if not answer or answer[0].lower() != 'y':
                     patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game, app_ver)
                     logs.warning(patch_msg)
@@ -161,4 +161,8 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         patched = True
                 else:
                     logs.error("\n{} is not a supported Architecture.".format(arch))
+    if patched == True:
+        logs.info('\nSuccessfully save patched file to: {}'.format(out))
+    else:
+        logs.info('\nPatches were declined, no changes are made.')
     logs.debug(program_msg)
