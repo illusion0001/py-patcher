@@ -23,6 +23,19 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
+
+            - name: Get short SHA
+              shell: bash
+              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+            - name: Set app version
+              shell: bash
+              run: |
+                ver=1.`git rev-list HEAD --count`
+                echo program_version=\'$ver\' > src/prog_ver.py
+                echo program_version=$ver > prog_ver
 
             - name: Setup Python
               uses: actions/setup-python@v3
@@ -33,10 +46,6 @@ jobs:
               run: |
                 python -m pip install -r requirements.txt
                 python -m pip install tinyaes git+https://github.com/pyinstaller/pyinstaller.git
-
-            - name: Get short SHA
-              shell: bash
-              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
             - name: Set key (base)
               if: |
@@ -81,6 +90,7 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                 path: |
+                  prog_ver
                   README.md
                   LICENSE
                   example.yml
@@ -89,7 +99,9 @@ jobs:
                 retention-days: ${{ env.artifact_days }}
 
     push_release:
-      if: github.event_name == 'workflow_dispatch'
+      if: |
+        github.event_name == 'workflow_dispatch' &&
+        github.repository == 'illusion0001/py-patcher'
       needs: build
 
       runs-on: ubuntu-latest
@@ -116,7 +128,7 @@ jobs:
             cd release-repo
             echo hash=`git rev-parse HEAD` >> ${{ github.env }}
             cd ..
-            echo commit=`git rev-list HEAD --count` >> ${{ github.env }}
+            cat artifact/prog_ver >> ${{ github.env }}
             cp *.md artifact
             cd artifact
             mkdir bin
@@ -126,5 +138,5 @@ jobs:
         - name: Push release
           env:
             GITHUB_TOKEN: ${{ secrets.repo2 }}
-          run: gh release create 1.$commit artifact/bin/* --target $hash -t 1.$commit -F changelist.md -R illusion0001/py-patcher-bin
+          run: gh release create $program_version artifact/bin/* --target $hash -t $program_version -F changelist.md -R illusion0001/py-patcher-bin
 

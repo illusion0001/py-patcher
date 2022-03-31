@@ -6,6 +6,7 @@ import yaml
 from datetime import datetime
 
 from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis
+from src.prog_ver import program_version
 
 # Easily load different architectures
 arch_dic = {
@@ -80,7 +81,7 @@ def cloneFile(elf_file, outdate=False, output=None, patched=False):
 def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt):
     program_msg = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher\n\nOperations completed, closing program.'
     patched = False
-    logs.info("\nOpening patch file: {}".format(conf_file))
+    logs.info("\nWelcome to py-patch! {}\nOpening patch file: {}".format(program_version, conf_file))
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
         for i in range(0, len(read_data)):
@@ -108,7 +109,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
             patch_list   = read_data[i]['patch_list']
             # Print Metadata
             logs.info("\n"
-                      "=====================\n"
+                      "========================\n"
                       "= Game Title    : {}\n"
                       "= Game Version  : {}\n"
                       "= Patch Version : {}\n"
@@ -117,7 +118,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                       "= Patch Note    : {}\n"
                       "= Patch Enabled : {}\n"
                       "= Architecture  : {}\n"
-                      "====================="
+                      "========================"
                 .format(
                 game, app_ver, patch_ver, name,
                 patch_author, note, enabled, arch))
@@ -147,13 +148,13 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         patch_addr  = patch_data[1]
                         patch_value = patch_data[2]
                         logs.debug("\n"
-                                   "====================\n"
+                                   "========================\n"
                                    "= Patch Type    : {}\n"
                                    "= Offset (Real) : {}\n"
                                    "= Value         : {}\n"
                                    "= OutFile       : {}\n"
                                    "= Line          : {}\n"
-                                   "===================="
+                                   "========================"
                                    .format(patch_type, hex(patch_addr), patch_value, out, count))
                         # Process the patch according to it's architecture
                         final_data = architecture.convertData(patch_type, patch_addr, patch_value)
