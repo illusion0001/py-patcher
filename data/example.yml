@@ -23,15 +23,25 @@
        - [ bytes32, 0x400080, 0x60000000 ]
        - [ bytes64, 0x400084, 0x6000000060000000 ]
 
-- game: "Game Title1"
-  app_ver: "01.00"
-  patch_ver: "1.0"
-  name: "Patch Title1"
-  author: "having skill"
-  note: "issues"
-  enabled: True # Todo: move this to a separate file
-  arch: cell
+# Metadata
+- game: "Game Title"                # Game Title
+  app_ver: "01.00"                  # Game Version
+  patch_ver: "1.0"                  # Patch Version
+  name: "Patch Title"               # Patch Name
+  author: "Author1, Author2, etc.." # Patch Author(s) (optional)
+  note: "Patch notes."              # Patch Notes (optional)
+  enabled: True                     # Must be False in database. (True, False)
+  arch: cell                        # Patch architecture (cell, orbis, generic)
   patch_list:
+     # Patch contents:
+     # Supported types:
+     # bytes (byte array), utf8, utf16 string
+     # byte, bytes16, bytes32, bytes64 (hex or int)
+     # float32, float64
+     # - [ Generic Offset Base : 0x0      ] # beginning of file
+     # - [ Cell Elf Base       : 0x10000  ] # elf base
+     # - [ Orbis Elf Base      : 0x400000 ] # disabled aslr base
+     # Examples:
        - [ utf8, 0x10000, "My utf8 string!" ]
        - [ utf16, 0x12000, "My utf16 string!" ]
        - [ bytes, 0x200c8, "60 00 00 00" ]

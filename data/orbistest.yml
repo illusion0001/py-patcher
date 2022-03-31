@@ -1,9 +1,10 @@
-- game: test
+- patch:
+  game: "Game Title 1"
   app_ver: "01.03"
   patch_ver: "1.0"
-  name: "test"
-  author: "test"
-  note: "tests"
+  name: "Patch Name 1"
+  author: "Patch Author"
+  note: "Patch notes."
   arch: orbis
   enabled: False # Todo: move this to a separate file
   patch_list:
@@ -23,14 +24,15 @@
         # f32 = float
         # f64 = double precision float
 
-- game: test
+- patch:
+  game: "Game Title 2"
   app_ver: "01.03"
   patch_ver: "1.0"
-  name: "test"
-  author: "test"
-  note: "tests"
+  name: "Patch Name 2"
+  author: "Patch Author"
+  note: "Patch notes."
   arch: orbis
-  enabled: True # Todo: move this to a separate file
+  enabled: False # Todo: move this to a separate file
   patch_list:
       # - [ syntax ]
       # - [ Cell Elf Base  : 0x10000  ]
