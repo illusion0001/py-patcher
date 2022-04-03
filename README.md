@@ -8,6 +8,7 @@ Latest binaries: https://github.com/illusion0001/py-patcher-bin/releases/latest
 
 # Features
 
+- Download [patch](https://github.com/illusion0001/illusion0001.github.io/tree/main/_patch0) files with `-dl` flag.
 - Config like parsing support.
 - Supports big and little endian architecture. (PS3 and PS4)
 - Easy to read syntaxes.
@@ -23,12 +24,12 @@ Latest binaries: https://github.com/illusion0001/py-patcher-bin/releases/latest
 - utf8 - text string (must be enclosed with quotation marks. i.e  `"hello world!"` )
 - utf16 - text string (must be enclosed with quotation marks. i.e `"hello world!"` )
 - bytes - byte array (must be enclosed with quotation marks. i.e `"90 90 90 90"` or `"90909090"` )
-- byte - 1 byte (`0x12`/`18`)
-- bytes16 - 2 bytes (`0x1234`/`4660`)
-- bytes32 - 4 bytes (`0x12345678`/`305419896`)
-- bytes64 - 8 bytes (`0x1234567890abcdef`/`1311768467294899695`)
-- float32 - single 32 bit float (`1.0`)
-- float64 - double 64 bit float (`1.0000`)
+- byte - 1 byte <!-- (`0x12`/`18`) -->
+- bytes16 - 2 bytes <!-- (`0x1234`/`4660`) -->
+- bytes32 - 4 bytes <!-- (`0x12345678`/`305419896`) -->
+- bytes64 - 8 bytes <!-- (`0x1234567890abcdef`/`1311768467294899695`) -->
+- float32 - single 32 bit float <!-- (`1.0`) -->
+- float64 - double 64 bit float <!-- (`1.0000`) -->
 
 Example (scroll down for more info): https://github.com/illusion0001/py-patcher/blob/7166320afeffe8fadd9715579b5fcf909ce4fb86/data/example.yml#L26-L54
 
@@ -49,6 +50,8 @@ options:
                         Specify output file path.
   -ci, --ci_build       For running tests on buildbot.
   -y, --always_yes      Always skip confirmation prompts.
+  -dl, --download_patch
+                        Downloads patch file.
 ```
 
 # Credits

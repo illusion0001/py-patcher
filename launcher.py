@@ -42,11 +42,11 @@ if __name__ == "__main__":
 
     parser.add_argument('-f',
                         '--file',
-                        required=True,
+                        required=False,
                         help='Specify file to be patched.')
     parser.add_argument('-p',
                         '--patch',
-                        required=True,
+                        required=False,
                         help='Specify patch file.')
     parser.add_argument('-v',
                         '--verbose',
@@ -72,7 +72,12 @@ if __name__ == "__main__":
                         required=False,
                         action="store_false",
                         help='Always skip confirmation prompts.')
+    parser.add_argument('-dl',
+                        '--download_patch',
+                        required=False,
+                        action="store_true",
+                        help='Downloads patch file.')
     args = parser.parse_args()
 
     # Load the config file, and patch the ELF file
-    loadConfig(args.file, args.patch, args.verbose, args.output_date, args.output_path, args.ci_build, args.always_yes)
+    loadConfig(args.file, args.patch, args.verbose, args.output_date, args.output_path, args.ci_build, args.always_yes, args.download_patch)

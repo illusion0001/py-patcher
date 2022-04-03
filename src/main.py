@@ -2,6 +2,7 @@ import os
 import coloredlogs
 import shutil
 import logging as logs
+import wget
 import yaml
 from datetime import datetime
 
@@ -25,6 +26,12 @@ def patchfile(offset, value, out, count):
         f.write(value)
         logs.info(
             "\nApplied Patch Line {} in file: {}".format(count, out))
+
+def downloadPatch(url, patch_file):
+    wget.download(url)
+    print('') # fix newline
+    shutil.unpack_archive(patch_file, '')
+    os.remove(patch_file)
 
 def headercheck(archs, elf):
     header = open(elf, "rb")
@@ -79,10 +86,35 @@ def cloneFile(elf_file, outdate=False, output=None, patched=False):
         shutil.copyfile(elf_file, out)
     return out
 
-def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt):
-    program_msg = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher'
-    patched = False
-    logs.info("\nWelcome to py-patch! Version: {}\nOpening patch file: {}".format(program_version, conf_file))
+def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download):
+    patch_file     = 'patch.zip'
+    patch_folder   = 'patch0'
+    patch_url      = (f'https://illusion0001.github.io/_patch/{patch_file}')
+    patchdir_check = os.path.isdir(patch_folder)
+    program_msg    = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher'
+    patched        = False
+
+    if patch_prompt:
+        if patchdir_check == True and download == True:
+            logs.info('\nExisting patch folder \"{}\" detected, Updating will overwrite existing files.'.format(patch_folder))
+            answer = input('Would you like to update? [y/n]: ')
+            if not answer or answer[0].lower() != 'y':
+                download = False
+            else:
+                download = True
+
+    if download == True:
+        # This will overwrite existing enabled patch files
+        # Autogen wen?
+        downloadPatch(patch_url, patch_file)
+        logs.info('\nDownloaded Patch database.\nPlease open and enable your desired patch file in folder: \"{}\"'.format(patch_folder))
+        return
+    if elf_file == None or conf_file == None:
+        logs.error('\nNo input executable or patch file supplied, exiting..')
+        return
+
+    if download == False:
+        logs.info("\nWelcome to py-patch! Version: {}\nOpening patch file: {}".format(program_version, conf_file))
     with open(conf_file) as fh:
         read_data = yaml.safe_load(fh)
         for i in range(0, len(read_data)):
@@ -129,7 +161,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
             if enabled == False:
                 logs.warning(patch_msg)
             if patch_prompt:
-                answer = input('File to be patched: {}\nConfirmation:\nAre you sure you want to apply this patch?: [y/n]: '.format(elf_file))
+                answer = input('File to be patched: {}\nConfirmation:\nAre you sure you want to apply this patch? [y/n]: '.format(elf_file))
                 if not answer or answer[0].lower() != 'y':
                     patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game, app_ver)
                     logs.warning(patch_msg)

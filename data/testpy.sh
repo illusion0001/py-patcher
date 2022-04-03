@@ -7,4 +7,6 @@ python launcher.py -f data/testdata/fakecell.elf -p celltest.yml -y -v -o output
 python launcher.py -f data/testdata/fakecell.elf -p celltest.yml -y -v
 python launcher.py -f data/testdata/fakecell.elf -p celltest.yml -y
 python launcher.py -f data/testdata/testdata.elf -p missingdata.yml -y -v
+python launcher.py -f data/testdata/testdata.elf -p missingdata.yml -y -v -dl
+ls -R patch0
 echo ============================================
