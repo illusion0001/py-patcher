@@ -2,7 +2,7 @@ import os
 import coloredlogs
 import shutil
 import logging as logs
-import wget
+import requests
 import yaml
 from datetime import datetime
 
@@ -28,8 +28,8 @@ def patchfile(offset, value, out, count):
             "\nApplied Patch Line {} in file: {}".format(count, out))
 
 def downloadPatch(url, patch_file):
-    wget.download(url)
-    print('') # fix newline
+    file_request = requests.get(url)
+    open(patch_file, 'wb').write(file_request.content)
     shutil.unpack_archive(patch_file, '')
     os.remove(patch_file)
 
@@ -106,12 +106,14 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     if download == True:
         # This will overwrite existing enabled patch files
         # Autogen wen?
+        logs.info('\nDownloading Patch database from: {}'.format(patch_url))
         downloadPatch(patch_url, patch_file)
         logs.info('\nDownloaded Patch database.\nPlease open and enable your desired patch file in folder: \"{}\"'.format(patch_folder))
         return
+
     if elf_file == None or conf_file == None:
-        logs.error('\nNo input executable or patch file supplied, exiting..')
-        return
+        logs.error('\nNo input executable or patch file supplied, aborting.')
+        os.abort()
 
     if download == False:
         logs.info("\nWelcome to py-patch! Version: {}\nOpening patch file: {}".format(program_version, conf_file))
