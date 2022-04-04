@@ -90,9 +90,16 @@ def cloneFile(elf_file, outdate=False, output=None, patched=False):
 
 def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download):
 
+    # we should not ship pre-defined config files
+    # todo: autogen this
+    with open ('py-patch-config.yml', 'r') as config:
+        read_data = yaml.safe_load(config)
+        missing_key  = ''
+        patch_folder = read_data.get('folder_path',    missing_key)
+        patch_url    = read_data.get('patch_url_base', missing_key)
+
     patch_file       = 'patch.zip'
-    patch_folder     = 'patch0'
-    patch_url        = (f'https://illusion0001.github.io/_patch/{patch_file}')
+    patch_url_full   = (f'{patch_url}{patch_file}')
     patchdir_check   = os.path.isdir(patch_folder)
     program_msg      = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher'
     patched          = False
@@ -107,7 +114,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     DownloadSel      = 'DownloadQuestion: '
     glob_yes         = True
     manual_conf_file = conf_file
-    patched_state = False
+    patched_state    = False
 
     if patch_prompt:
         if patchdir_check == True and download == True:
@@ -119,18 +126,18 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
         download = questionary.confirm("Would you like to download the database?", qmark=DownloadSel).ask()
 
     if download == True:
-        logs.info('\nDownloading Patch database from: {}'.format(patch_url))
-        downloadPatch(patch_url, patch_file)
+        logs.info('\nDownloading Patch database from: {}'.format(patch_url_full))
+        downloadPatch(patch_url_full, patch_file)
         logs.info('\nDownloaded Patch database.\nSaved to folder: \"{}\"'.format(patch_folder))
 
     while glob_yes:
         if elf_file == None:
-            elf_file = questionary.path("What's the path for your executable file?", qmark=FilePick).ask()
+            elf_file = questionary.path("What is the path for the executable file?", qmark=FilePick).ask()
             if elf_file == None or elf_file == '':
                 logs.error('No file selected!')
                 os.abort()
             else:
-                logs.info('Selected executable file: {}'.format(elf_file))
+                logs.info('\nSelected executable file: {}'.format(elf_file))
 
         if elf_file:
             patches_key = []
@@ -190,7 +197,6 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         patch_name_key.append(name_key)
                     logs.info('\nNumber of patches available: {} for \"{}\"'.format(patch_count, game))
                     name = questionary.checkbox("Select the patch you want to apply:", qmark=PatchSelPick, choices=patch_name_key).ask()
-                    #print(name)
                     if name == '' or name == []:
                         patched = False
                         enabled = False
@@ -256,14 +262,14 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                 closing_prog     = '\nOperations completed, closing program.'
                 restart = questionary.select("Would you like to apply more patches?", choices=[restart_full, restart_partial, restart_partial2,exit_program]).ask()
                 if restart == restart_full:
-                    patched = False
+                    patched          = False
                     manual_conf_file = None
-                    conf_file = None
-                    elf_file = None
+                    conf_file        = None
+                    elf_file         = None
                     loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download)
                 elif restart == restart_partial:
                     glob_yes = True
-                    patched = False
+                    patched  = False
                     logs.debug('Glob: {}'.format(glob_yes))
                 elif restart == restart_partial2:
                     patched_state = True
