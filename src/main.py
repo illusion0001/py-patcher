@@ -107,6 +107,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     DownloadSel      = 'DownloadQuestion: '
     glob_yes         = True
     manual_conf_file = conf_file
+    patched_state = False
 
     if patch_prompt:
         if patchdir_check == True and download == True:
@@ -152,9 +153,12 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         os.abort()
                     else:
                         logs.info('\nSelected patch file: {}'.format(conf_file))
+                patched_state = True
 
+            while patched_state == True:
                 # open patch file
                 with open(conf_file) as fh:
+                    patch_name_key = []
                     logs.info("\nWelcome to py-patch! Version: {}\nOpened patch file: {}".format(program_version, conf_file))
                     read_data = yaml.safe_load(fh)
                     for i in range(0, len(read_data)):
@@ -186,7 +190,11 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         patch_name_key.append(name_key)
                     logs.info('\nNumber of patches available: {} for \"{}\"'.format(patch_count, game))
                     name = questionary.checkbox("Select the patch you want to apply:", qmark=PatchSelPick, choices=patch_name_key).ask()
-                    if name != '' or name != []:
+                    #print(name)
+                    if name == '' or name == []:
+                        patched = False
+                        enabled = False
+                    elif name != '' or name != []:
                         for name1 in name:
                             for i in range(0, len(read_data)):
                                 game_new       = read_data[i].get('game',      missing_key)
@@ -236,15 +244,17 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                     logs.error("\n{} is not a supported Architecture.".format(arch))
                     if patched == True:
                         logs.info('\nSuccessfully save patched file to: {}'.format(out))
+                        patched_state = False
                     else:
                         logs.info('\nPatches were declined, no changes are made.')
                     logs.debug(program_msg)
 
-                restart_full    = 'Restart to executable file select.'
-                restart_partial = 'Restart to patch file select.'
-                exit_program    = 'Exit the program.'
-                closing_prog    = '\nOperations completed, closing program.'
-                restart = questionary.select("Would you like to apply more patches?", choices=[restart_full, restart_partial, exit_program]).ask()
+                restart_full     = 'Return to executable file select.'
+                restart_partial  = 'Return to patch file select.'
+                restart_partial2 = 'Return to patch entry select.'
+                exit_program     = 'Exit the program.'
+                closing_prog     = '\nOperations completed, closing program.'
+                restart = questionary.select("Would you like to apply more patches?", choices=[restart_full, restart_partial, restart_partial2,exit_program]).ask()
                 if restart == restart_full:
                     patched = False
                     manual_conf_file = None
@@ -255,9 +265,10 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     glob_yes = True
                     patched = False
                     logs.debug('Glob: {}'.format(glob_yes))
+                elif restart == restart_partial2:
+                    patched_state = True
                 elif restart == exit_program:
                     logs.info(closing_prog)
                     return
-                else:    
+                else:
                     logs.info(closing_prog)
-
