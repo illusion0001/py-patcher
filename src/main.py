@@ -4,6 +4,8 @@ import shutil
 import logging as logs
 import requests
 import yaml
+import questionary
+import glob
 from datetime import datetime
 
 from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis
@@ -87,117 +89,175 @@ def cloneFile(elf_file, outdate=False, output=None, patched=False):
     return out
 
 def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download):
-    patch_file     = 'patch.zip'
-    patch_folder   = 'patch0'
-    patch_url      = (f'https://illusion0001.github.io/_patch/{patch_file}')
-    patchdir_check = os.path.isdir(patch_folder)
-    program_msg    = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher'
-    patched        = False
+
+    patch_file       = 'patch.zip'
+    patch_folder     = 'patch0'
+    patch_url        = (f'https://illusion0001.github.io/_patch/{patch_file}')
+    patchdir_check   = os.path.isdir(patch_folder)
+    program_msg      = '\nThanks for using py-patch!\nProgram made by illusion0001, ShadowDog with help from aerosoul and contributors.\nCheckout the Project on Github: https://github.com/illusion0001/py-patcher'
+    patched          = False
+    patch_ext        = 'yml'
+    patch_path       = ('{}/**/*.{}'.format(patch_folder, patch_ext))
+    patch_count      = 0
+    patches_key      = []
+    patch_name_key   = []
+    FilePick         = 'FilePick: '
+    PatchFilePick    = 'PatchFilePick: '
+    PatchSelPick     = 'PatchSelectionPick: '
+    DownloadSel      = 'DownloadQuestion: '
+    glob_yes         = True
+    manual_conf_file = conf_file
 
     if patch_prompt:
         if patchdir_check == True and download == True:
             logs.info('\nExisting patch folder \"{}\" detected, Updating will overwrite existing files.'.format(patch_folder))
-            answer = input('Would you like to update? [y/n]: ')
-            if not answer or answer[0].lower() != 'y':
-                download = False
-            else:
-                download = True
+            download = questionary.confirm("Would you like to update the database?", qmark=DownloadSel).ask()
+
+    if patchdir_check == False:
+        logs.info('\nPatch folder \"{}\" not found!'.format(patch_folder))
+        download = questionary.confirm("Would you like to download the database?", qmark=DownloadSel).ask()
 
     if download == True:
-        # This will overwrite existing enabled patch files
-        # Autogen wen?
         logs.info('\nDownloading Patch database from: {}'.format(patch_url))
         downloadPatch(patch_url, patch_file)
-        logs.info('\nDownloaded Patch database.\nPlease open and enable your desired patch file in folder: \"{}\"'.format(patch_folder))
-        return
+        logs.info('\nDownloaded Patch database.\nSaved to folder: \"{}\"'.format(patch_folder))
 
-    if elf_file == None or conf_file == None:
-        logs.error('\nNo input executable or patch file supplied, aborting.')
-        os.abort()
+    while glob_yes:
+        if elf_file == None:
+            elf_file = questionary.path("What's the path for your executable file?", qmark=FilePick).ask()
+            if elf_file == None or elf_file == '':
+                logs.error('No file selected!')
+                os.abort()
+            else:
+                logs.info('Selected executable file: {}'.format(elf_file))
 
-    if download == False:
-        logs.info("\nWelcome to py-patch! Version: {}\nOpening patch file: {}".format(program_version, conf_file))
-    with open(conf_file) as fh:
-        read_data = yaml.safe_load(fh)
-        for i in range(0, len(read_data)):
-            missing_key  = ''
-            arch = read_data[i].get('arch', missing_key)
-        # Checking desired verbosity level
-        if verbose:
-            coloredlogs.set_level(logs.DEBUG)
-            missing_key  = 'Unknown String!'
-        if ci:
-            logs.debug('\nRunning in Buildbot Mode.')
-        else:
-            logs.debug('\nRunning in User Mode.')
-            # Verify file
-            headercheck(arch, elf_file)
-        # Open config file
-        for i in range(0, len(read_data)):
-            game         = read_data[i].get('game',      missing_key)
-            app_ver      = read_data[i].get('app_ver',   missing_key)
-            patch_ver    = read_data[i].get('patch_ver', missing_key)
-            name         = read_data[i].get('name',      missing_key)
-            patch_author = read_data[i].get('author',    missing_key)
-            note         = read_data[i].get('note',      missing_key)
-            enabled      = read_data[i].get('enabled',        'True') # Todo: Autogen this
-            arch         = read_data[i].get('arch',      missing_key)
-            patch_list   = read_data[i]['patch_list']
-            # Print Metadata
-            logs.info("\n"
-                      "========================\n"
-                      "= Game Title    : {}\n"
-                      "= Game Version  : {}\n"
-                      "= Patch Version : {}\n"
-                      "= Patch Name    : {}\n"
-                      "= Patch Author  : {}\n"
-                      "= Patch Note    : {}\n"
-                      "= Patch Enabled : {}\n"
-                      "= Architecture  : {}\n"
-                      "========================"
-                .format(
-                game, app_ver, patch_ver, name,
-                patch_author, note, enabled, arch))
-            count = 0
-            patch_msg = '\nPatch: "{}" for "{}" ({}) is disabled and will be skipped.'.format(name, game, app_ver)
-            if enabled == False:
-                logs.warning(patch_msg)
-            if patch_prompt:
-                answer = input('File to be patched: {}\nConfirmation:\nAre you sure you want to apply this patch? [y/n]: '.format(elf_file))
-                if not answer or answer[0].lower() != 'y':
-                    patch_msg = '\nPatch: Disabling entry "{}" for "{}" will be skipped.'.format(name, game, app_ver)
-                    logs.warning(patch_msg)
-                    enabled = False
-            if enabled == True:
-                out = cloneFile(elf_file, outdate, outputpath, patched)
-                ## Load the architecture according to the config
-                if arch.upper() in arch_dic.keys():
-                    architecture = arch_dic.get(arch.upper())()
-                    # Reading patch list
-                    for patch_data in patch_list:
-                        count += 1
-                        logs.info("\nApplying patch: {}".format(count))
-                        patch_type  = patch_data[0]
-                        patch_addr  = patch_data[1]
-                        patch_value = patch_data[2]
-                        logs.debug("\n"
-                                   "========================\n"
-                                   "= Patch Type    : {}\n"
-                                   "= Offset (Real) : {}\n"
-                                   "= Value         : {}\n"
-                                   "= OutFile       : {}\n"
-                                   "= Line          : {}\n"
-                                   "========================"
-                                   .format(patch_type, hex(patch_addr), patch_value, out, count))
-                        # Process the patch according to it's architecture
-                        final_data = architecture.convertData(patch_type, patch_addr, patch_value)
-                        patchfile(final_data.get('offset'), final_data.get('value'), out, count)
-                        patched = True
+        if elf_file:
+            patches_key = []
+            logs.info('\nGetting file listings...')
+            # Get all patch files within patch0 folder
+            for conf_file in glob.glob(patch_path, recursive=True):
+                patches_key.append(conf_file)
+                glob_yes = True
+            else:
+                if manual_conf_file:
+                    logs.info('\nManual patch file: {}'.format(manual_conf_file))
+                    conf_file = manual_conf_file
+                    glob_yes = False
                 else:
-                    logs.error("\n{} is not a supported Architecture.".format(arch))
-    if patched == True:
-        logs.info('\nSuccessfully save patched file to: {}'.format(out))
-    else:
-        logs.info('\nPatches were declined, no changes are made.')
-    logs.debug(program_msg)
-    logs.info('\nOperations completed, closing program.')
+                    # ask user to pick a file
+                    conf_file = questionary.select("Select patch file:", qmark=PatchFilePick, choices=patches_key).ask()
+
+                    if conf_file == None or conf_file == '':
+                        logs.error('\nNo patch file selected!')
+                        os.abort()
+                    else:
+                        logs.info('\nSelected patch file: {}'.format(conf_file))
+
+                # open patch file
+                with open(conf_file) as fh:
+                    logs.info("\nWelcome to py-patch! Version: {}\nOpened patch file: {}".format(program_version, conf_file))
+                    read_data = yaml.safe_load(fh)
+                    for i in range(0, len(read_data)):
+                        missing_key  = ''
+                        arch = read_data[i].get('arch', missing_key)
+                    # Checking desired verbosity level
+                    if verbose:
+                        coloredlogs.set_level(logs.DEBUG)
+                        missing_key  = 'Unknown String!'
+                    if ci:
+                        logs.debug('\nRunning in Buildbot Mode.')
+                    else:
+                        logs.debug('\nRunning in User Mode.')
+                        # Verify file
+                        headercheck(arch, elf_file)
+                    # Open config file
+                    for i in range(0, len(read_data)):
+                        # only fetch the keys we need
+                        game             = read_data[i].get('game',      missing_key)
+                        app_ver          = read_data[i].get('app_ver',   missing_key)
+                        name             = read_data[i].get('name',      missing_key)
+                        patch_list       = read_data[i]['patch_list']
+                        count            = 0
+                        patch_count     += 1
+                        patch_title      = 'Patch name:'
+                        game_title       = 'Game title:'
+                        game_ver_title   = 'Game version:'
+                        name_key = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
+                        patch_name_key.append(name_key)
+                    logs.info('\nNumber of patches available: {} for \"{}\"'.format(patch_count, game))
+                    name = questionary.checkbox("Select the patch you want to apply:", qmark=PatchSelPick, choices=patch_name_key).ask()
+                    if name != '' or name != []:
+                        for name1 in name:
+                            for i in range(0, len(read_data)):
+                                game_new       = read_data[i].get('game',      missing_key)
+                                app_ver_new    = read_data[i].get('app_ver',   missing_key)
+                                patch_ver      = read_data[i].get('patch_ver', missing_key)
+                                name_new       = read_data[i].get('name',      missing_key)
+                                patch_author   = read_data[i].get('author',    missing_key)
+                                note           = read_data[i].get('note',      missing_key)
+                                arch           = read_data[i].get('arch',      missing_key)
+                                patch_list_new = read_data[i]['patch_list']
+                                name_key_new = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title ,app_ver_new))
+                                if name1 == name_key_new:
+                                    patch_list = patch_list_new
+                                    logs.info("\n"
+                                            "========================\n"
+                                            "= Game Title    : {}\n"
+                                            "= Game Version  : {}\n"
+                                            "= Patch Version : {}\n"
+                                            "= Patch Name    : {}\n"
+                                            "= Patch Author  : {}\n"
+                                            "= Patch Note    : {}\n"
+                                            "= Architecture  : {}\n"
+                                            "========================"
+                                        .format(
+                                        game_new, app_ver_new, patch_ver, name_new,
+                                        patch_author, note, arch))
+                                    enabled = True
+                            if enabled == True:
+                                out = cloneFile(elf_file, outdate, outputpath, patched)
+                                # Load the architecture according to the config
+                                if arch.upper() in arch_dic.keys():
+                                    architecture = arch_dic.get(arch.upper())()
+                                    # Reading patch list
+                                    for patch_data in patch_list:
+                                        count += 1
+                                        logs.info("\nApplying patch: {}".format(count))
+                                        patch_type  = patch_data[0]
+                                        patch_addr  = patch_data[1]
+                                        patch_value = patch_data[2]
+                                        # Process the patch according to it's architecture
+                                        final_data = architecture.convertData(patch_type, patch_addr, patch_value)
+                                        patchfile(final_data.get('offset'), final_data.get('value'), out, count)
+                                        patched = True
+                                        glob_yes = False
+                                        patch_name_key = []
+                                else:
+                                    logs.error("\n{} is not a supported Architecture.".format(arch))
+                    if patched == True:
+                        logs.info('\nSuccessfully save patched file to: {}'.format(out))
+                    else:
+                        logs.info('\nPatches were declined, no changes are made.')
+                    logs.debug(program_msg)
+
+                restart_full    = 'Restart to executable file select.'
+                restart_partial = 'Restart to patch file select.'
+                exit_program    = 'Exit the program.'
+                closing_prog    = '\nOperations completed, closing program.'
+                restart = questionary.select("Would you like to apply more patches?", choices=[restart_full, restart_partial, exit_program]).ask()
+                if restart == restart_full:
+                    patched = False
+                    manual_conf_file = None
+                    conf_file = None
+                    elf_file = None
+                    loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download)
+                elif restart == restart_partial:
+                    glob_yes = True
+                    patched = False
+                    logs.debug('Glob: {}'.format(glob_yes))
+                elif restart == exit_program:
+                    logs.info(closing_prog)
+                    return
+                else:    
+                    logs.info(closing_prog)
+

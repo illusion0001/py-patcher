@@ -1,4 +1,4 @@
 coloredlogs==15.0.1
 PyYAML==6.0
-pyyml==0.0.2
 requests==2.27.1
+questionary==1.10.0
