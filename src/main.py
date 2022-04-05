@@ -196,8 +196,8 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         name_key = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
                         patch_name_key.append(name_key)
                     logs.info('\nNumber of patches available: {} for \"{}\"'.format(patch_count, game))
-                    name = questionary.checkbox("Select the patch you want to apply:", qmark=PatchSelPick, choices=patch_name_key).ask()
-                    if name == '' or name == []:
+                    name = questionary.checkbox("Select the patch you want to apply: (Ctrl+C to Cancel)", qmark=PatchSelPick, choices=patch_name_key).ask()
+                    if name == '' or name == [] or name == None:
                         patched = False
                         enabled = False
                     elif name != '' or name != []:
