@@ -152,7 +152,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
         if elf_file == None:
             elf_file = questionary.path("What is the path for the executable file?", qmark=FilePick).ask()
             if elf_file == None or elf_file == '':
-                logs.error('No file selected!')
+                logs.error('\nNo file selected!')
                 return
             else:
                 logs.info('\nSelected executable file: {}'.format(elf_file))
@@ -224,7 +224,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         patch_title      = 'Patch name:'
                         game_title       = 'Game title:'
                         game_ver_title   = 'Game version:'
-                        name_key = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
+                        name_key = ('{} {}\n     {} {}\n     {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
                         patch_name_key.append(name_key)
                     logs.info('\nNumber of patches available: {}'.format(patch_count))
                     name = questionary.checkbox("Select the patch you want to apply: (Ctrl+C to Cancel)", qmark=PatchSelPick, choices=patch_name_key).ask()
@@ -242,7 +242,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                 note           = read_data[i].get('note',      missing_key)
                                 arch           = read_data[i].get('arch',      missing_key)
                                 patch_list_new = read_data[i]['patch_list']
-                                name_key_new = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title ,app_ver_new))
+                                name_key_new = ('{} {}\n     {} {}\n     {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title ,app_ver_new))
                                 if name1 == name_key_new:
                                     patch_list = patch_list_new
                                     logs.info("\n"
