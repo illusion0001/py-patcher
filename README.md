@@ -8,7 +8,7 @@ Latest binaries: https://github.com/illusion0001/py-patcher-bin/releases/latest
 
 # Features
 
-- Download [patch](https://github.com/illusion0001/illusion0001.github.io/tree/main/_patch0) files with `-dl` flag.
+- Download/Update [patch](https://github.com/illusion0001/illusion0001.github.io/tree/main/_patch0) files with `-dl` flag.
 - Config like parsing support.
 - Supports big and little endian architecture. (PS3 and PS4)
 - Easy to read syntaxes.
@@ -39,7 +39,7 @@ Example (scroll down for more info): https://github.com/illusion0001/py-patcher/
 launcher.py -h
 usage: launcher.py [-h] -f FILE -p PATCH [-v] [-od] [-o OUTPUT_PATH] [-ci] [-y]
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Specify file to be patched.
   -p PATCH, --patch PATCH
@@ -51,7 +51,7 @@ options:
   -ci, --ci_build       For running tests on buildbot.
   -y, --always_yes      Always skip confirmation prompts.
   -dl, --download_patch
-                        Downloads patch file.
+                        Download/Update patch files.
 ```
 
 # Credits

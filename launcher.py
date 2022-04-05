@@ -76,7 +76,7 @@ if __name__ == "__main__":
                         '--download_patch',
                         required=False,
                         action="store_true",
-                        help='Downloads patch file.')
+                        help='Download/Update patch files.')
     args = parser.parse_args()
 
     # Load the config file, and patch the ELF file
