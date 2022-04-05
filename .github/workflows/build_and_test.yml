@@ -72,13 +72,9 @@ jobs:
               run: echo artifact_days=14 >> ${{ github.env }}
 
             - name: Build application
-              run: pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
-
-            - name: Prepare tests
               run: |
+                pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
                 cp -r data/* .
-                mkdir output-file
-                chmod +x *.sh
 
             # Since the program is now interactive
             # tests don't work anymore.
@@ -92,7 +88,6 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                 path: |
-                  py-patch-config.yml
                   prog_ver
                   README.md
                   LICENSE
@@ -135,8 +130,8 @@ jobs:
             cp *.md artifact
             cd artifact
             mkdir bin
-            zip bin/py-patch-windows.zip py-patch.exe example.yml README.md LICENSE changelist.md py-patch-config.yml
-            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE changelist.md py-patch-config.yml
+            zip bin/py-patch-windows.zip py-patch.exe example.yml README.md LICENSE changelist.md
+            tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE changelist.md
 
         - name: Push release
           env:

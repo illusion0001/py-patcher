@@ -7,6 +7,7 @@ import yaml
 import questionary
 import glob
 from datetime import datetime
+from pathlib import Path
 
 from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis
 from src.prog_ver import program_version
@@ -90,9 +91,26 @@ def cloneFile(elf_file, outdate=False, output=None, patched=False):
 
 def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download):
 
-    # we should not ship pre-defined config files
-    # todo: autogen this
-    with open ('py-patch-config.yml', 'r') as config:
+    patch_folder = 'patch0'
+    patch_url    = 'https://illusion0001.github.io/_patch/'
+    config_dir   = 'config'
+    config_gen   = '{}/py-patch-config.yml'.format(config_dir)
+    condir_check = os.path.isdir(config_dir)
+
+    logs.info("\nWelcome to py-patch! Version: {}".format(program_version, conf_file))
+
+    if Path(config_gen).is_file() == False:
+        if condir_check == False: # if folder doesn't exist
+                                  # create it
+            os.mkdir(config_dir)
+        con_file = open(config_gen, 'w')
+        con_gen_data = ("folder_path: \'{}\'\n"
+                        "patch_url_base: \'{}\'\n".format(patch_folder, patch_url))
+        con_file.write(con_gen_data)
+        con_file.close()
+
+    # else:
+    with open (config_gen, 'r') as config:
         read_data = yaml.safe_load(config)
         missing_key  = ''
         patch_folder = read_data.get('folder_path',    missing_key)
@@ -105,7 +123,6 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     patched          = False
     patch_ext        = 'yml'
     patch_path       = ('{}/**/*.{}'.format(patch_folder, patch_ext))
-    patch_count      = 0
     patches_key      = []
     patch_name_key   = []
     FilePick         = 'FilePick: '
@@ -115,6 +132,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     glob_yes         = True
     manual_conf_file = conf_file
     patched_state    = False
+    reloading        = None
 
     if patch_prompt:
         if patchdir_check == True and download == True:
@@ -135,38 +153,46 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
             elf_file = questionary.path("What is the path for the executable file?", qmark=FilePick).ask()
             if elf_file == None or elf_file == '':
                 logs.error('No file selected!')
-                os.abort()
+                return
             else:
                 logs.info('\nSelected executable file: {}'.format(elf_file))
 
         if elf_file:
             patches_key = []
-            logs.info('\nGetting file listings...')
-            # Get all patch files within patch0 folder
-            for conf_file in glob.glob(patch_path, recursive=True):
-                patches_key.append(conf_file)
-                glob_yes = True
+            reloading = False
+            if manual_conf_file:
+                logs.info('\nManual patch file: {}'.format(manual_conf_file))
+                conf_file = manual_conf_file
+                glob_yes = False
             else:
-                if manual_conf_file:
-                    logs.info('\nManual patch file: {}'.format(manual_conf_file))
-                    conf_file = manual_conf_file
-                    glob_yes = False
-                else:
-                    # ask user to pick a file
-                    conf_file = questionary.select("Select patch file:", qmark=PatchFilePick, choices=patches_key).ask()
+                conf_file_list = 'Pick file from folder: {}'.format(patch_folder)
+                conf_file_type = 'Type in patch file manually'
+                conf_file_sel = questionary.select("Select patch file:", qmark=PatchFilePick, choices=[conf_file_list, conf_file_type]).ask()
 
-                    if conf_file == None or conf_file == '':
-                        logs.error('\nNo patch file selected!')
-                        os.abort()
-                    else:
-                        logs.info('\nSelected patch file: {}'.format(conf_file))
-                patched_state = True
+                if conf_file_sel == conf_file_list:
+                    # ask user to pick a file
+                    logs.info('\nGetting file listing from folder: {}'.format(patch_folder))
+                    # Get all patch files within patch0 folder
+                    for conf_file in glob.glob(patch_path, recursive=True):
+                        patches_key.append(conf_file)
+                        glob_yes = True
+                    conf_file = questionary.select("Select patch file:", qmark=PatchFilePick, choices=patches_key).ask()
+                elif conf_file_sel == conf_file_type:
+                    conf_file = questionary.path("What is the path for the patch file?", qmark=FilePick).ask()
+
+                if conf_file == None or conf_file == '':
+                    logs.error('\nNo patch file selected!')
+                    return
+                else:
+                    logs.info('\nSelected patch file: {}'.format(conf_file))
+            patched_state = True
 
             while patched_state == True:
                 # open patch file
                 with open(conf_file) as fh:
+                    patch_count    = 0 # reset number of patches
                     patch_name_key = []
-                    logs.info("\nWelcome to py-patch! Version: {}\nOpened patch file: {}".format(program_version, conf_file))
+                    logs.info("\nOpened patch file: {}".format(conf_file))
                     read_data = yaml.safe_load(fh)
                     for i in range(0, len(read_data)):
                         missing_key  = ''
@@ -181,6 +207,11 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         logs.debug('\nRunning in User Mode.')
                         # Verify file
                         headercheck(arch, elf_file)
+                        patch_text = 'patch file: {}'.format(conf_file)
+                        if reloading:
+                            logs.info('\nReloaded {}'.format(patch_text))
+                        else:
+                            logs.info('\nLoaded {}'.format(patch_text))
                     # Open config file
                     for i in range(0, len(read_data)):
                         # only fetch the keys we need
@@ -195,7 +226,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         game_ver_title   = 'Game version:'
                         name_key = ('{} {}\n   {} {}\n   {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
                         patch_name_key.append(name_key)
-                    logs.info('\nNumber of patches available: {} for \"{}\"'.format(patch_count, game))
+                    logs.info('\nNumber of patches available: {}'.format(patch_count))
                     name = questionary.checkbox("Select the patch you want to apply: (Ctrl+C to Cancel)", qmark=PatchSelPick, choices=patch_name_key).ask()
                     if name == '' or name == [] or name == None:
                         patched = False
@@ -268,13 +299,18 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     elf_file         = None
                     loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prompt, download)
                 elif restart == restart_partial:
-                    glob_yes = True
-                    patched  = False
+                    manual_conf_file = None
+                    reloading        = True
+                    glob_yes         = True
+                    patched          = False
                     logs.debug('Glob: {}'.format(glob_yes))
                 elif restart == restart_partial2:
-                    patched_state = True
+                    manual_conf_file = None
+                    reloading        = True
+                    patched_state    = True
                 elif restart == exit_program:
                     logs.info(closing_prog)
                     return
                 else:
                     logs.info(closing_prog)
+                    return
