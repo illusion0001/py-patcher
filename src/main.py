@@ -97,7 +97,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     config_gen   = '{}/py-patch-config.yml'.format(config_dir)
     condir_check = os.path.isdir(config_dir)
 
-    logs.info("\nWelcome to py-patch! Version: {}".format(program_version, conf_file))
+    logs.info("\nWelcome to py-patch! Version: {}".format(program_version))
 
     if Path(config_gen).is_file() == False:
         if condir_check == False: # if folder doesn't exist
@@ -291,6 +291,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                 restart_partial2 = 'Return to patch entry select.'
                 exit_program     = 'Exit the program.'
                 closing_prog     = '\nOperations completed, closing program.'
+                # TODO: free up memory during reload cycles
                 restart = questionary.select("Would you like to apply more patches?", choices=[restart_full, restart_partial, restart_partial2,exit_program]).ask()
                 if restart == restart_full:
                     patched          = False
