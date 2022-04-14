@@ -309,6 +309,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     manual_conf_file = None
                     reloading        = True
                     patched_state    = True
+                    patched          = False
                 elif restart == exit_program:
                     logs.info(closing_prog)
                     return
