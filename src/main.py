@@ -216,17 +216,22 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                             logs.info('\nLoaded {}'.format(patch_text))
                     # Open config file
                     for i in range(0, len(read_data)):
-                        # only fetch the keys we need
                         game             = read_data[i].get('game',      missing_key)
                         app_ver          = read_data[i].get('app_ver',   missing_key)
+                        patch_ver        = read_data[i].get('patch_ver', missing_key)
                         name             = read_data[i].get('name',      missing_key)
+                        patch_author     = read_data[i].get('author',    missing_key)
+                        note             = read_data[i].get('note',      missing_key)
+                        arch             = read_data[i].get('arch',      missing_key)
                         patch_list       = read_data[i]['patch_list']
                         count            = 0
                         patch_count     += 1
                         patch_title      = 'Patch name:'
                         game_title       = 'Game title:'
                         game_ver_title   = 'Game version:'
-                        name_key = ('{} {}\n     {} {}\n     {} {}'.format(patch_title, name, game_title, game, game_ver_title ,app_ver))
+                        author_title     = 'Author:'
+                        note_title       = 'Notes:'
+                        name_key = ('{} {}\n     {} {}\n     {} {}\n     {} {}\n     {} {}'.format(patch_title, name, game_title, game, game_ver_title, app_ver, author_title, patch_author, note_title, note))
                         patch_name_key.append(name_key)
                     logs.info('\nNumber of patches available: {}'.format(patch_count))
                     name = questionary.checkbox("Select the patch you want to apply: (Ctrl+C to Cancel)", qmark=PatchSelPick, choices=patch_name_key).ask()
@@ -236,18 +241,18 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     elif name != '' or name != []:
                         for name1 in name:
                             for i in range(0, len(read_data)):
-                                game_new       = read_data[i].get('game',      missing_key)
-                                app_ver_new    = read_data[i].get('app_ver',   missing_key)
-                                patch_ver      = read_data[i].get('patch_ver', missing_key)
-                                name_new       = read_data[i].get('name',      missing_key)
-                                patch_author   = read_data[i].get('author',    missing_key)
-                                note           = read_data[i].get('note',      missing_key)
-                                arch           = read_data[i].get('arch',      missing_key)
-                                patch_list_new = read_data[i]['patch_list']
-                                name_key_new = ('{} {}\n     {} {}\n     {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title ,app_ver_new))
+                                game_new           = read_data[i].get('game',      missing_key)
+                                app_ver_new        = read_data[i].get('app_ver',   missing_key)
+                                patch_ver_new      = read_data[i].get('patch_ver', missing_key)
+                                name_new           = read_data[i].get('name',      missing_key)
+                                patch_author_new   = read_data[i].get('author',    missing_key)
+                                note_new           = read_data[i].get('note',      missing_key)
+                                arch_new           = read_data[i].get('arch',      missing_key)
+                                patch_list_new     = read_data[i]['patch_list']
+                                name_key_new = ('{} {}\n     {} {}\n     {} {}\n     {} {}\n     {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title, app_ver_new, author_title, patch_author_new, note_title, note_new))
                                 if name1 == name_key_new:
                                     patch_list = patch_list_new
-                                    logs.info("\n"
+                                    logs.debug("\n"
                                             "========================\n"
                                             "= Game Title    : {}\n"
                                             "= Game Version  : {}\n"
@@ -258,14 +263,15 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                             "= Architecture  : {}\n"
                                             "========================"
                                         .format(
-                                        game_new, app_ver_new, patch_ver, name_new,
-                                        patch_author, note, arch))
+                                        game_new, app_ver_new, patch_ver_new, name_new,
+                                        patch_author_new, note_new, arch_new))
                                     enabled = True
                             if enabled == True:
+                                logs.debug(arch_new)
                                 out = cloneFile(elf_file, outdate, outputpath, patched)
                                 # Load the architecture according to the config
-                                if arch.upper() in arch_dic.keys():
-                                    architecture = arch_dic.get(arch.upper())()
+                                if arch_new.upper() in arch_dic.keys():
+                                    architecture = arch_dic.get(arch_new.upper())()
                                     # Reading patch list
                                     for patch_data in patch_list:
                                         count += 1
@@ -280,7 +286,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                         glob_yes = False
                                         patch_name_key = []
                                 else:
-                                    logs.error("\n{} is not a supported Architecture.".format(arch))
+                                    logs.error("\n{} is not a supported Architecture.".format(arch_new))
                     if patched == True:
                         logs.info('\nSuccessfully save patched file to: {}'.format(out))
                         patched_state = False
