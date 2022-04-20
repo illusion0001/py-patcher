@@ -155,7 +155,8 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                 logs.error('\nNo file selected!')
                 return
             else:
-                logs.info('\nSelected executable file: {}'.format(elf_file))
+                elf_file = elf_file.replace('"', '')
+                logs.info('\nSelected executable file: \"{}\"'.format(elf_file))
 
         if elf_file:
             patches_key = []
@@ -207,6 +208,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                         logs.debug('\nRunning in User Mode.')
                         # Verify file
                         headercheck(arch, elf_file)
+                        conf_file = conf_file.replace('"', '')
                         patch_text = 'patch file: {}'.format(conf_file)
                         if reloading:
                             logs.info('\nReloaded {}'.format(patch_text))
