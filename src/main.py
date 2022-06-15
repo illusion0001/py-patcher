@@ -157,19 +157,20 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     patched_state    = False
     reloading        = None
 
-    if patch_prompt:
-        if patchdir_check == True and download == True:
-            logs.info('\nExisting patch folder \"{}\" detected, Updating will overwrite existing files.'.format(patch_folder))
-            download = questionary.confirm("Would you like to update the database?", qmark=DownloadSel).ask()
-
-    if patchdir_check == False:
-        logs.info('\nPatch folder \"{}\" not found!'.format(patch_folder))
-        download = questionary.confirm("Would you like to download the database?", qmark=DownloadSel).ask()
-
     if download == True:
-        logs.info('\nDownloading Patch database from: {}'.format(patch_url_full))
-        downloadPatch(patch_url_full, patch_file)
-        logs.info('\nDownloaded Patch database.\nSaved to folder: \"{}\"'.format(patch_folder))
+        if patch_prompt:
+            if patchdir_check == True:
+                logs.info('\nExisting patch folder \"{}\" detected, Updating will overwrite existing files.'.format(patch_folder))
+                download = questionary.confirm("Would you like to update the database?", qmark=DownloadSel).ask()
+
+        if patchdir_check == False:
+            logs.info('\nPatch folder \"{}\" not found!'.format(patch_folder))
+            download = questionary.confirm("Would you like to download the database?", qmark=DownloadSel).ask()
+
+        if download == True:
+            logs.info('\nDownloading Patch database from: {}'.format(patch_url_full))
+            downloadPatch(patch_url_full, patch_file)
+            logs.info('\nDownloaded Patch database.\nSaved to folder: \"{}\"'.format(patch_folder))
 
     while glob_yes:
         if elf_file == None:

@@ -73,11 +73,11 @@ if __name__ == "__main__":
                         action="store_false",
                         help='Always skip confirmation prompts.')
     parser.add_argument('-dl',
-                        '--download_patch',
+                        '--download_disable',
                         required=False,
-                        action="store_true",
-                        help='Download/Update patch files.')
+                        action="store_false",
+                        help='Disable Downloading of Patch files.')
     args = parser.parse_args()
 
     # Load the config file, and patch the ELF file
-    loadConfig(args.file, args.patch, args.verbose, args.output_date, args.output_path, args.ci_build, args.always_yes, args.download_patch)
+    loadConfig(args.file, args.patch, args.verbose, args.output_date, args.output_path, args.ci_build, args.always_yes, args.download_disable)
