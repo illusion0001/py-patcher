@@ -9,7 +9,7 @@ import glob
 from datetime import datetime
 from pathlib import Path
 
-from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis
+from src.archtype.archtypes import Cell, Generic, GenericOrbis, Orbis, Ngp
 from src.prog_ver import program_version
 
 # Easily load different architectures
@@ -17,7 +17,8 @@ arch_dic = {
     "CELL": Cell,
     "GENERIC": Generic, # for direct file patch
     "ORBIS": Orbis,
-    "GENERIC_ORBIS": GenericOrbis
+    "GENERIC_ORBIS": GenericOrbis,
+    "NGP": Ngp
 }
 
 def patchfile(offset, value, out, count):
@@ -41,6 +42,8 @@ def headercheck(archs, elf):
     cell_valid_header   = b'\x7F\x45\x4C\x46\x02\x02\x01\x66'
     orbis_valid_header1 = b'\x7F\x45\x4C\x46\x02\x01\x01\x09'
     orbis_valid_header2 = b'\x2F\x6C\x69\x62\x65\x78\x65\x63\x2F\x6C\x64\x2D\x65\x6C\x66\x2E\x73\x6F\x2E\x31'
+    ngp_valid_header1   = b'\x7F\x45\x4C\x46\x01\x01\x01\x00'
+    ngp_valid_header2   = b'\x28\x00'
     if archs == 'cell':
         elf_header = header.read(0x8)
         if elf_header == cell_valid_header:
@@ -68,6 +71,22 @@ def headercheck(archs, elf):
             logs.error("\n"
                        "========================\n"
                        "File {} is invalid! Make sure it is a valid dump from Retail Disc/Digital, not Fake Packaged Titles.\n"
+                       "Aborting.\n"
+                       "========================".format(elf))
+            os.abort()
+    if archs == 'ngp':
+        elf_header1_result = header.read(0x8)
+        header.seek(0x12, 0)
+        elf_header2_result = header.read(0x2)
+        if elf_header1_result == ngp_valid_header1 and ngp_valid_header2 == elf_header2_result:
+            logs.debug("\n"
+                       "========================\n"
+                       "Valid Elf\n"
+                       "========================")
+        else:
+            logs.error("\n"
+                       "========================\n"
+                       "File {} is invalid! Make sure it is decrypted.\n"
                        "Aborting.\n"
                        "========================".format(elf))
             os.abort()
@@ -113,6 +132,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
     with open (config_gen, 'r') as config:
         read_data = yaml.safe_load(config)
         missing_key  = ''
+        missing_val  = 0
         patch_folder = read_data.get('folder_path',    missing_key)
         patch_url    = read_data.get('patch_url_base', missing_key)
 
@@ -216,13 +236,14 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                             logs.info('\nLoaded {}'.format(patch_text))
                     # Open config file
                     for i in range(0, len(read_data)):
-                        game             = read_data[i].get('game',      missing_key)
-                        app_ver          = read_data[i].get('app_ver',   missing_key)
-                        patch_ver        = read_data[i].get('patch_ver', missing_key)
-                        name             = read_data[i].get('name',      missing_key)
-                        patch_author     = read_data[i].get('author',    missing_key)
-                        note             = read_data[i].get('note',      missing_key)
-                        arch             = read_data[i].get('arch',      missing_key)
+                        game             = read_data[i].get('game',       missing_key)
+                        app_ver          = read_data[i].get('app_ver',    missing_key)
+                        patch_ver        = read_data[i].get('patch_ver',  missing_key)
+                        name             = read_data[i].get('name',       missing_key)
+                        patch_author     = read_data[i].get('author',     missing_key)
+                        note             = read_data[i].get('note',       missing_key)
+                        arch             = read_data[i].get('arch',       missing_key)
+                        entry_prog       = read_data[i].get('entry_prog', missing_val)
                         patch_list       = read_data[i]['patch_list']
                         count            = 0
                         patch_count     += 1
@@ -241,13 +262,14 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     elif name != '' or name != []:
                         for name1 in name:
                             for i in range(0, len(read_data)):
-                                game_new           = read_data[i].get('game',      missing_key)
-                                app_ver_new        = read_data[i].get('app_ver',   missing_key)
-                                patch_ver_new      = read_data[i].get('patch_ver', missing_key)
-                                name_new           = read_data[i].get('name',      missing_key)
-                                patch_author_new   = read_data[i].get('author',    missing_key)
-                                note_new           = read_data[i].get('note',      missing_key)
-                                arch_new           = read_data[i].get('arch',      missing_key)
+                                game_new           = read_data[i].get('game',       missing_key)
+                                app_ver_new        = read_data[i].get('app_ver',    missing_key)
+                                patch_ver_new      = read_data[i].get('patch_ver',  missing_key)
+                                name_new           = read_data[i].get('name',       missing_key)
+                                patch_author_new   = read_data[i].get('author',     missing_key)
+                                note_new           = read_data[i].get('note',       missing_key)
+                                arch_new           = read_data[i].get('arch',       missing_key)
+                                entry_prog_new     = read_data[i].get('entry_prog', missing_val)
                                 patch_list_new     = read_data[i]['patch_list']
                                 name_key_new = ('{} {}\n     {} {}\n     {} {}\n     {} {}\n     {} {}'.format(patch_title, name_new, game_title, game_new, game_ver_title, app_ver_new, author_title, patch_author_new, note_title, note_new))
                                 if name1 == name_key_new:
@@ -261,10 +283,11 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                             "= Patch Author  : {}\n"
                                             "= Patch Note    : {}\n"
                                             "= Architecture  : {}\n"
+                                            "= Code Entry    : {}\n"
                                             "========================"
                                         .format(
                                         game_new, app_ver_new, patch_ver_new, name_new,
-                                        patch_author_new, note_new, arch_new))
+                                        patch_author_new, note_new, arch_new, hex(entry_prog_new)))
                                     enabled = True
                             if enabled == True:
                                 logs.debug(arch_new)
@@ -280,7 +303,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                                         patch_addr  = patch_data[1]
                                         patch_value = patch_data[2]
                                         # Process the patch according to it's architecture
-                                        final_data = architecture.convertData(patch_type, patch_addr, patch_value)
+                                        final_data = architecture.convertData(patch_type, patch_addr, patch_value, entry_prog)
                                         patchfile(final_data.get('offset'), final_data.get('value'), out, count)
                                         patched = True
                                         glob_yes = False
