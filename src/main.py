@@ -57,6 +57,7 @@ def headercheck(archs, elf):
                        "File {} is invalid! Make sure it is decrypted.\n"
                        "Aborting.\n"
                        "========================".format(elf))
+            exit = input('Press any key to exit')
             os.abort()
     if archs == 'orbis' or archs == 'generic_orbis':
         elf_header1_result = header.read(0x8)
@@ -73,6 +74,7 @@ def headercheck(archs, elf):
                        "File {} is invalid! Make sure it is a valid dump from Retail Disc/Digital, not Fake Packaged Titles.\n"
                        "Aborting.\n"
                        "========================".format(elf))
+            exit = input('Press any key to exit')
             os.abort()
     if archs == 'ngp':
         elf_header1_result = header.read(0x8)
@@ -89,6 +91,7 @@ def headercheck(archs, elf):
                        "File {} is invalid! Make sure it is decrypted.\n"
                        "Aborting.\n"
                        "========================".format(elf))
+            exit = input('Press any key to exit')
             os.abort()
     header.close()
 
