@@ -240,7 +240,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                             logs.info('\nLoaded {}'.format(patch_text))
                     # Open config file
                     for i in range(0, len(read_data)):
-                        game             = read_data[i].get('game',       missing_key)
+                        game             = read_data[i].get('title',       missing_key)
                         app_ver          = read_data[i].get('app_ver',    missing_key)
                         patch_ver        = read_data[i].get('patch_ver',  missing_key)
                         name             = read_data[i].get('name',       missing_key)
@@ -266,7 +266,7 @@ def loadConfig(elf_file, conf_file, verbose, outdate, outputpath, ci, patch_prom
                     elif name != '' or name != []:
                         for name1 in name:
                             for i in range(0, len(read_data)):
-                                game_new           = read_data[i].get('game',       missing_key)
+                                game_new           = read_data[i].get('title',       missing_key)
                                 app_ver_new        = read_data[i].get('app_ver',    missing_key)
                                 patch_ver_new      = read_data[i].get('patch_ver',  missing_key)
                                 name_new           = read_data[i].get('name',       missing_key)
