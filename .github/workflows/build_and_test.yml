@@ -130,6 +130,7 @@ jobs:
             cd artifact
             mkdir bin
             zip bin/py-patch-windows.zip py-patch.exe example.yml README.md LICENSE changelist.md
+            zip bin/py-patch-osx.zip py-patch-osx example.yml README.md LICENSE changelist.md
             tar -czvf bin/py-patch-linux.tar.gz py-patch example.yml README.md LICENSE changelist.md
 
         - name: Push release
