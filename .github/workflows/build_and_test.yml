@@ -18,7 +18,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [ ubuntu-latest, windows-latest ]
+                os: [ ubuntu-latest, windows-latest, macos-latest ]
 
         steps:
             - name: Checkout
@@ -78,13 +78,9 @@ jobs:
                 pyinstaller --onefile --key "${{ env.my_key }}" -n py-patch --distpath . launcher.py
                 cp -r data/* .
 
-            # Since the program is now interactive
-            # tests don't work anymore.
-            # - name: Run tests
-            #   shell: bash
-            #   run: |
-            #      ./testpy.sh
-            #      ./testapp.sh
+            - name: Rename app (OSX)
+              if: runner.os == 'macos'
+              run: mv py-patch py-patch-osx
 
             - name: Push app artifact
               uses: actions/upload-artifact@v3
@@ -95,6 +91,7 @@ jobs:
                   LICENSE
                   example.yml
                   py-patch
+                  py-patch-osx
                   py-patch.exe
                 retention-days: ${{ env.artifact_days }}
 
