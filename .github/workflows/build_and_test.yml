@@ -96,9 +96,9 @@ jobs:
                 retention-days: ${{ env.artifact_days }}
 
     push_release:
-      if: |
-        github.event_name == 'workflow_dispatch' &&
-        github.repository == 'illusion0001/py-patcher'
+     # if: |
+       # github.event_name == 'workflow_dispatch' &&
+       # github.repository == 'illusion0001/py-patcher'
       needs: build
 
       runs-on: ubuntu-latest
